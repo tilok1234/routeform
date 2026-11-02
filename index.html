@@ -214,6 +214,37 @@ body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z
 .bar{height:10px;border-radius:5px;background:#26354a;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok)}
 .bigbtn{width:100%;min-height:50px;font-size:14px;margin-bottom:8px}
+/* phone editing: Select / Place tools, edit bar, place bar, move pad */
+.ftools{display:none}
+body.field .ftools[data-on=true]{display:flex;position:absolute;top:8px;left:8px;z-index:12;gap:6px;align-items:center}
+.seg2{display:flex;background:rgba(18,26,38,.92);border:1px solid #3b4a60;border-radius:12px;padding:3px;gap:3px}
+.seg2 button{min-height:44px;min-width:68px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:13px;color:#c3d2e4;padding:0 8px}
+.seg2 button.on{background:#e9eef5;color:#111}
+body.field .ftools .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:rgba(18,26,38,.82)}
+.editbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 2px}
+.editbar button,.nudge button{min-height:50px;border-radius:10px;border:1px solid #3b4a60;background:#1b2636;font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
+.editbar button b{font-size:18px;line-height:1}
+.editbar button.danger{border-color:#834a52;color:#ffb7b3}
+.nudge{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 4px}
+.nudge button{font-size:20px;min-height:56px}
+.pb-row{display:flex;align-items:center;gap:8px;margin:2px 0 6px}
+.pb-row .sw{width:18px;height:18px;border-radius:50%;border:2px solid #fff;flex:0 0 18px}
+.pb-row select{flex:1;min-width:0;min-height:44px;background:#0e1725;border:1px solid #384a61;border-radius:10px;padding:0 10px;color:var(--txt)}
+.pb-row .btn.icon{min-width:44px;min-height:44px;font-size:18px}
+.pb-rot{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
+.pb-rot .rotglyph{width:36px;height:36px;flex-basis:36px;font-size:18px}
+.pb-kit{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.pb-kit::-webkit-scrollbar{display:none}
+.pb-kit button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:74px;min-height:66px;border:1px solid #314052;background:#1b2636;border-radius:10px;padding:4px 6px;font-size:11px;color:#dce6f3}
+.pb-kit button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:#2c2c30}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.swatches button{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}
+.swatches button.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.swatches input[type=color]{width:52px;height:40px;padding:2px}
+body.field input,body.field select,body.field textarea{font-size:16px}  /* smaller text makes iOS zoom into the field */
+body.field .modal footer .btn{min-height:44px;padding:0 16px;font-size:14px}
+body.field .stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}  /* long press drags a hold, not a text selection */
+body.field .memb label{min-height:40px;font-size:14px}
 
 @media (max-width:1180px){.workspace{grid-template-columns:250px minmax(0,1fr) 296px}.subbrand{max-width:200px}}
 @media (max-width:980px){.workspace{grid-template-columns:230px minmax(0,1fr) 270px}.modes button{padding:6px 8px}}
@@ -223,7 +254,7 @@ body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T18:09:00.196Z">
+<meta name="routeform-build" content="2026-11-02T18:34:16.189Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1559,7 +1590,7 @@ globalThis.RF_ASSETS = { photos: {} };
     return {
       mode: 'route', tool: 'select', surveyTool: 'select', catalogId: 'cat-jug', activeRouteId: null, display: 'all', hiddenRoutes: [],
       layers: { paint: true, photo: false, seams: true, holes: true, fixtures: true, ropes: true, labels: true, outside: true, progress: true, confidence: false },
-      selection: null, fieldRoute: 'all', fieldSort: 'up', fieldTab: 'map', placeRotation: 0
+      selection: null, fieldRoute: 'all', fieldSort: 'up', fieldTab: 'map', fieldTool: 'select', placeRotation: 0
     };
   }
 
@@ -2529,6 +2560,7 @@ globalThis.RF_ASSETS = { photos: {} };
       try { this.canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
       this.pointers.set(e.pointerId, { x, y });
       if (this.pointers.size === 2) {
+        clearTimeout(this.gesture?.hold);
         if (this.gesture?.type === 'drag') this.app.mode()?.onDragCancel?.();
         const [a, b] = [...this.pointers.values()];
         this.gesture = { type: 'pinch', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, m0: [(a.x + b.x) / 2, (a.y + b.y) / 2], v0: { ...this.v } };
@@ -2537,7 +2569,15 @@ globalThis.RF_ASSETS = { photos: {} };
       if (this.pointers.size > 2) return;
       const panButton = e.pointerType === 'mouse' && (e.button === 1 || e.button === 2);
       const target = panButton ? null : this.app.mode()?.dragTarget?.(x, y, e);
-      this.gesture = { type: 'pending', x0: x, y0: y, lx: x, ly: y, target, touch: e.pointerType !== 'mouse', panOnly: panButton };
+      const g = this.gesture = { type: 'pending', x0: x, y0: y, lx: x, ly: y, target, touch: e.pointerType !== 'mouse', panOnly: panButton };
+      // Touch: a hold is only dragged after a long press, so a swipe that starts on it still pans.
+      if (target && g.touch) g.hold = setTimeout(() => {
+        if (this.gesture !== g || g.type !== 'pending') return;
+        g.type = 'drag';
+        try { navigator.vibrate?.(12); } catch (err) { /* not supported */ }
+        this.app.mode()?.onDragStart?.(g.target, g.lx, g.ly);
+        this.app.mode()?.onDragMove?.(g.lx, g.ly, e);
+      }, 380);
     }
     onMove(e) {
       const [x, y] = this.pt(e);
@@ -2553,7 +2593,8 @@ globalThis.RF_ASSETS = { photos: {} };
       }
       const moved = Math.hypot(x - g.x0, y - g.y0);
       if (g.type === 'pending' && moved > (g.touch ? 9 : 4)) {
-        if (g.target && !g.panOnly) { g.type = 'drag'; this.app.mode()?.onDragStart?.(g.target, x, y); }
+        clearTimeout(g.hold);
+        if (g.target && !g.panOnly && !g.touch) { g.type = 'drag'; this.app.mode()?.onDragStart?.(g.target, x, y); }
         else g.type = 'pan';
       }
       if (g.type === 'pan') { this.setView({ ...this.v, ox: this.v.ox + x - g.lx, oy: this.v.oy + y - g.ly }); }
@@ -2565,6 +2606,7 @@ globalThis.RF_ASSETS = { photos: {} };
       const [x, y] = this.pt(e), g = this.gesture;
       this.pointers.delete(e.pointerId);
       if (!g) return;
+      clearTimeout(g.hold);
       if (g.type === 'pinch') {
         if (this.pointers.size === 1) { const [r] = [...this.pointers.values()]; this.gesture = { type: 'pan', x0: r.x, y0: r.y, lx: r.x, ly: r.y }; }
         else if (!this.pointers.size) this.gesture = null;
@@ -3397,22 +3439,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       if (sel?.kind === 'placement') { const pl = st.placement(sel.id); if (pl && !A().dragState) UI.drawSelection(ctx, view, st, pl); }
       const t = this.hoverTarget;
       if (t) {
-        ctx.save();
-        if (t.ok && t.hole) {
-          const [x, y] = view.toScreen(t.hole.x, t.hole.y);
-          ctx.lineWidth = 3; ctx.strokeStyle = t.blocked ? '#ff4d4d' : '#38d27a';
-          ctx.beginPath(); ctx.arc(x, y, Math.max(9, 22 * view.v.s), 0, Math.PI * 2); ctx.stroke();
-          ctx.font = '700 11px ui-monospace, Consolas, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-          const label = t.blocked ? `${t.hole.id} · occupied by ${t.blocked}` : t.hole.id;
-          const tw = ctx.measureText(label).width + 10;
-          ctx.fillStyle = 'rgba(10,14,20,.85)'; ctx.fillRect(x + 12, y - 30, tw, 18);
-          ctx.fillStyle = t.blocked ? '#ff9a9a' : '#9ff0c0'; ctx.fillText(label, x + 17, y - 15);
-        } else if (t.ok && t.panel) {
-          const [x, y] = view.toScreen(t.x, t.y);
-          ctx.strokeStyle = '#f5c542'; ctx.setLineDash([4, 3]); ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.stroke();
-        }
-        ctx.restore();
+        drawTarget(ctx, view, t);
         if (st.ui.tool === 'place' && t.ok && !t.blocked) {
           const cat = st.catalogItem(st.ui.catalogId), route = st.activeRoute();
           if (cat) view.drawHold(cat, t.x, t.y, st.ui.placeRotation - (t.panelRotation || 0), { color: route?.color || '#999', alpha: 0.6 }, false);
@@ -3447,7 +3474,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     return other ? `${other.label} (${other.routeIds.map(r => st.route(r)?.name || '?').join(', ') || 'no route'})` : ids[0];
   }
   /* Resolve where a catalog item would attach for a pointer position. */
-  function targetFor(cat, px, py, ignoreId) {
+  function targetFor(cat, px, py, ignoreId, snapPx = SNAP_PX) {
     if (!cat) return null;
     const st = ST(), view = A().view, [wx, wy] = view.toWall(px, py);
     if (cat.attachment === 'screw_on') {
@@ -3456,10 +3483,29 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const [lx, ly] = RF.geo.wallToPanel(panel, [wx, wy]);
       return { ok: true, screw: true, panel, local: { x: U.round(lx), y: U.round(ly) }, x: wx, y: wy, panelRotation: panel.transform.rotation || 0 };
     }
-    const near = W.nearestHole(st.index, wx, wy, { maxDist: SNAP_PX / view.v.s });
+    const near = W.nearestHole(st.index, wx, wy, { maxDist: snapPx / view.v.s });
     if (!near) return { ok: false, reason: 'no mounting hole within reach — zoom in or move closer to a hole' };
     const h = near.hole, panel = st.index.panels.get(h.panelId).panel;
     return { ok: true, hole: h, x: h.x, y: h.y, blocked: holderOf(h.id, ignoreId), panelRotation: panel.transform.rotation || 0 };
+  }
+  // Ring + hole ID where a hold would attach (green free, red occupied, dashed amber screw-on).
+  function drawTarget(ctx, view, t) {
+    ctx.save();
+    if (t.ok && t.hole) {
+      const [x, y] = view.toScreen(t.hole.x, t.hole.y);
+      ctx.lineWidth = 3; ctx.strokeStyle = t.blocked ? '#ff4d4d' : '#38d27a';
+      ctx.beginPath(); ctx.arc(x, y, Math.max(9, 22 * view.v.s), 0, Math.PI * 2); ctx.stroke();
+      ctx.font = '700 11px ui-monospace, Consolas, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      const label = t.blocked ? `${t.hole.id} · occupied by ${t.blocked}` : t.hole.id;
+      const tw = ctx.measureText(label).width + 10;
+      ctx.fillStyle = 'rgba(10,14,20,.85)'; ctx.fillRect(x + 12, y - 30, tw, 18);
+      ctx.fillStyle = t.blocked ? '#ff9a9a' : '#9ff0c0'; ctx.fillText(label, x + 17, y - 15);
+    } else if (t.ok && t.panel) {
+      const [x, y] = view.toScreen(t.x, t.y);
+      ctx.strokeStyle = '#f5c542'; ctx.setLineDash([4, 3]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
   }
   function placeNew(t) {
     const app = A(), st = ST(), route = st.activeRoute(), cat = st.catalogItem(st.ui.catalogId);
@@ -3781,6 +3827,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     q('#hDup').addEventListener('click', () => duplicate(pl));
     q('#hDel').addEventListener('click', () => removeHold(pl));
   }
+
+  // Shared with the phone view's Select / Place tools (ui-field.js).
+  RF.routeEdit = { PALETTE, targetFor, drawTarget, placeNew, moveTo, rotate, nudge, duplicate, removeHold, logRoute, addRoute, duplicateRoute, deleteRoute };
 })(globalThis.RF = globalThis.RF || {});
 </script>
 <script data-rf>
@@ -4433,44 +4482,114 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 </script>
 <script data-rf>
 /* ROUTEFORM 0.2 — ui-field.js
- * Phone-first field reference: the wall map stays primary; route chips filter; tapping a hold opens
- * a bottom sheet with the unambiguous hole reference, counting instructions, offset, rotation and
- * checklist state. Read-only with respect to the plan; progress is a separate, exportable session. */
+ * Phone-first view: the wall map stays primary; route chips filter; tapping a hold opens a bottom
+ * sheet with the unambiguous hole reference, counting instructions, offset, rotation and checklist
+ * state. Unless the plan is a read-only offline copy, the Select / Place tools also edit it on the
+ * phone (placement logic shared with the desktop editor via RF.routeEdit). Checklist progress is a
+ * separate, exportable session. */
 (function (RF) {
   'use strict';
-  const U = RF.util, W = RF.wall, G = RF.geo, S = RF.schema, UI = RF.ui;
-  const A = () => RF.app, ST = () => RF.app.store;
+  const U = RF.util, W = RF.wall, G = RF.geo, S = RF.schema, UI = RF.ui, C = RF.catalog;
+  const A = () => RF.app, ST = () => RF.app.store, RE = () => RF.routeEdit;
   const $ = id => document.getElementById(id);
   const STATES = { pending: { label: 'Pending', icon: '○' }, installed: { label: 'Installed', icon: '✓' }, needs_fix: { label: 'Needs fix', icon: '!' } };
+  const SNAP_PX = 40;          // finger-sized reach to the nearest hole
+  const MIN_PLACE_S = 0.09;    // below this zoom (≈18 px per 200 mm) a tap zooms in instead of placing
+  const editable = () => !ST().readOnly;
 
   const mode = {
-    mount() { renderTabs(); },
-    unmount() { $('fieldSheet').dataset.open = 'false'; $('fieldPage').dataset.open = 'false'; },
-    renderPanels() { renderTop(); renderTabs(); renderSheet(); renderPage(); },
+    target: null, msg: '', flashTimer: 0,
+    mount() { ST().ui.fieldTool = 'select'; this.target = null; this.msg = ''; renderTabs(); },
+    unmount() { $('fieldSheet').dataset.open = 'false'; $('fieldPage').dataset.open = 'false'; $('fieldTools').dataset.on = 'false'; this.target = null; A().dragState = null; },
+    renderPanels() { renderTop(); renderTabs(); renderTools(); renderSheet(); renderPage(); },
     onTap(px, py) {
-      const st = ST(), hit = A().view.hitHold(px, py);
-      if (hit) { st.ui.selection = { kind: 'placement', id: hit.id }; renderSheet(); A().requestDraw(); requestAnimationFrame(() => keepVisible(hit, py)); }
-      else if (st.ui.selection) { st.ui.selection = null; renderSheet(); A().requestDraw(); }
+      const st = ST(), app = A(), tool = editable() ? st.ui.fieldTool : 'select';
+      if (tool === 'place' || tool === 'pick') {
+        if (app.view.v.s < MIN_PLACE_S) {
+          app.view.zoomBy(0.18 / app.view.v.s, px, py);
+          this.onStatus('Zoomed in so the holes are big enough to hit. Now tap the exact hole.');
+          return;
+        }
+        if (tool === 'place') {
+          const t = RE().targetFor(st.catalogItem(st.ui.catalogId), px, py, null, SNAP_PX);
+          flash(t); RE().placeNew(t);
+          return;
+        }
+        const pl = st.placement(st.ui.selection?.id);
+        const t = pl && RE().targetFor(st.catalogItem(pl.catalogId), px, py, pl.id, SNAP_PX);
+        flash(t);
+        if (!pl) { st.ui.fieldTool = 'select'; renderTools(); renderSheet(); return; }
+        RE().moveTo(pl, t);
+        if (t?.ok && !t.blocked) { st.ui.fieldTool = 'select'; renderTools(); renderSheet(); }
+        return;
+      }
+      const hit = app.view.hitHold(px, py);
+      if (hit) { st.ui.selection = { kind: 'placement', id: hit.id }; renderSheet(); app.requestDraw(); requestAnimationFrame(() => keepVisible(hit, py)); }
+      else if (st.ui.selection) { st.ui.selection = null; renderSheet(); app.requestDraw(); }
     },
     onDoubleTap(px, py) { const hit = A().view.hitHold(px, py); if (hit) { focusHold(hit, 0.7); return true; } return false; },
+
+    // Dragging (Select tool): only the selected hold, after a long press on touch (see render.js).
+    dragTarget(px, py) {
+      const st = ST();
+      if (!editable() || st.ui.fieldTool !== 'select' || (st.ui.fieldTab || 'map') !== 'map') return null;
+      const hit = A().view.hitHold(px, py);
+      return hit && st.ui.selection?.id === hit.id ? hit.id : null;
+    },
+    onDragStart(id, px, py) {
+      const st = ST(), pl = st.placement(id), pos = pl && W.placementPosition(st.index, pl);
+      if (!pos?.ok) return;
+      // Move relative to where the finger went down, so the hold doesn't jump under the finger.
+      const [hx, hy] = A().view.toScreen(pos.x, pos.y);
+      A().dragState = { placementId: id, target: null, ghost: null, dx: hx - px, dy: hy - py };
+    },
+    onDragMove(px, py) {
+      const app = A(), st = ST(), d = app.dragState;
+      if (!d) return;
+      const pl = st.placement(d.placementId), cat = st.catalogItem(pl.catalogId) || st.project.catalog[0];
+      const x = px + d.dx, y = py + d.dy, [wx, wy] = app.view.toWall(x, y);
+      d.target = RE().targetFor(cat, x, y, pl.id, SNAP_PX);
+      const ok = d.target?.ok;
+      d.ghost = { cat, x: ok ? d.target.x : wx, y: ok ? d.target.y : wy, rot: pl.rotation - (d.target?.panelRotation || 0), color: ok && !d.target.blocked ? colourOf(pl) : '#ff5a5a' };
+      this.target = d.target;
+      app.requestDraw();
+    },
+    onDragEnd() {
+      const app = A(), d = app.dragState;
+      app.dragState = null; this.target = null;
+      if (d?.target) RE().moveTo(ST().placement(d.placementId), d.target);
+      app.requestDraw();
+    },
+    onDragCancel() { A().dragState = null; this.target = null; A().requestDraw(); },
+
     drawOver(ctx, view) {
       const st = ST(), sel = st.ui.selection;
-      if (sel?.kind === 'placement') { const pl = st.placement(sel.id); if (pl) UI.drawSelection(ctx, view, st, pl); }
+      if (sel?.kind === 'placement') { const pl = st.placement(sel.id); if (pl && !A().dragState) UI.drawSelection(ctx, view, st, pl); }
       if (sel?.kind === 'hole') {
         const h = st.index.holes.get(sel.id);
         if (h) { const [x, y] = view.toScreen(h.x, h.y); ctx.save(); ctx.lineWidth = 4; ctx.strokeStyle = '#ffe14d'; ctx.beginPath(); ctx.arc(x, y, Math.max(14, 40 * view.v.s), 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
       }
+      if (this.target) RE().drawTarget(ctx, view, this.target);
     },
+    onStatus(msg) { this.msg = msg || ''; const el = $('pbMsg'); if (el) el.textContent = this.msg; },
     onProgress() { renderSheet(); if (ST().ui.fieldTab !== 'map') renderPage(); renderTop(); },
     onServer() { renderPage(); },
     onKey(e) {
       const st = ST();
-      if (e.key === 'Escape') { st.ui.selection = null; renderSheet(); A().requestDraw(); }
+      if (e.key === 'Escape') { if (st.ui.fieldTool !== 'select') { setTool('select'); return; } st.ui.selection = null; renderSheet(); A().requestDraw(); }
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step(1);
       if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') step(-1);
     }
   };
   RF.modes.field = mode;
+
+  // Briefly ring the hole a tap resolved to (green free, red occupied).
+  function flash(t) {
+    clearTimeout(mode.flashTimer);
+    mode.target = t?.ok ? t : null;
+    A().requestDraw();
+    mode.flashTimer = setTimeout(() => { mode.target = null; A().requestDraw(); }, 1200);
+  }
 
   // Holds visible under the current chip filter, in setting order (height).
   function sequence() {
@@ -4511,20 +4630,26 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   // ---- top bar + tabs ----------------------------------------------------------------------
   function renderTop() {
     const st = ST(), p = st.project, ui = st.ui, r = p.revision, prov = W.provenance(p, st.index);
+    if (ui.fieldRoute !== 'all' && !st.route(ui.fieldRoute)) ui.fieldRoute = 'all';   // route deleted or undone
     const chips = [`<button class="rchip ${ui.fieldRoute === 'all' ? 'on' : ''}" data-fr="all">All routes</button>`]
       .concat(p.routes.map(rt => {
         const holds = st.holdsOf(rt.id), done = holds.filter(h => stateOf(h) === 'installed').length;
         return `<button class="rchip ${ui.fieldRoute === rt.id ? 'on' : ''}" data-fr="${U.esc(rt.id)}"><span class="sw" style="background:${rt.color}"></span>${U.esc(rt.name)}<small style="opacity:.75">${done}/${holds.length}</small></button>`;
       }));
-    $('fieldTop').innerHTML = `<div class="ft-row"><div class="ft-title">${U.esc(p.wall.name)} · ${U.esc(p.sector.name)}<br><small class="muted">${r ? `Revision ${r.number} · ${U.esc(r.createdAt.slice(0, 16).replace('T', ' '))}` : 'Unpublished draft'}${st.readOnly ? ' · read-only copy' : ''}</small></div>
+    if (editable()) chips.push('<button class="rchip" id="ftNewRoute">＋ Route</button>');
+    const edited = r && editable() && st.hasUnpublishedChanges() ? ' · edited' : '';
+    $('fieldTop').innerHTML = `<div class="ft-row"><div class="ft-title">${U.esc(p.wall.name)} · ${U.esc(p.sector.name)}<br><small class="muted">${r ? `Revision ${r.number} · ${U.esc(r.createdAt.slice(0, 16).replace('T', ' '))}${edited}` : 'Unpublished draft'}${st.readOnly ? ' · read-only copy' : ''}</small></div>
       <button class="ft-warn" id="ftWarn" aria-label="Calibration status">${prov.allVerified ? 'VERIFIED ✓' : '⚠ UNCALIBRATED'}</button></div>
       <div class="chips" role="group" aria-label="Filter routes">${chips.join('')}</div>`;
     $('fieldTop').querySelectorAll('[data-fr]').forEach(b => b.addEventListener('click', () => {
-      ui.fieldRoute = b.dataset.fr; st.saveUi();
+      ui.fieldRoute = b.dataset.fr;
+      if (ui.fieldRoute !== 'all') ui.activeRouteId = ui.fieldRoute;   // new holds go to the route you're looking at
+      st.saveUi();
       const sel = st.placement(ui.selection?.id);
       if (sel && ui.fieldRoute !== 'all' && !sel.routeIds.includes(ui.fieldRoute)) ui.selection = null;
       renderTop(); renderSheet(); renderPage(); A().requestDraw();
     }));
+    $('ftNewRoute')?.addEventListener('click', newRoute);
     $('ftWarn').addEventListener('click', calibrationInfo);
     $('fieldTop').querySelector('.rchip.on')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
@@ -4532,13 +4657,56 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const t = ST().ui.fieldTab || 'map';
     const tabs = [['map', '▦', 'Wall'], ['list', '☰', 'Holds'], ['check', '✓', 'Checklist'], ['more', '⋯', 'More']];
     $('fieldTabs').innerHTML = tabs.map(([k, i, l]) => `<button data-ft="${k}" class="${t === k ? 'on' : ''}" aria-pressed="${t === k}"><b>${i}</b>${l}</button>`).join('');
-    $('fieldTabs').querySelectorAll('[data-ft]').forEach(b => b.addEventListener('click', () => { ST().ui.fieldTab = b.dataset.ft; renderTabs(); renderPage(); renderSheet(); }));
+    $('fieldTabs').querySelectorAll('[data-ft]').forEach(b => b.addEventListener('click', () => { ST().ui.fieldTab = b.dataset.ft; renderTabs(); renderTools(); renderPage(); renderSheet(); }));
+  }
+
+  // ---- editing tools (Select / Place, undo, redo) --------------------------------------------
+  function renderTools() {
+    const st = ST(), el = $('fieldTools'), placing = st.ui.fieldTool === 'place';
+    const on = editable() && (st.ui.fieldTab || 'map') === 'map';
+    el.dataset.on = String(on);
+    if (!on) { el.innerHTML = ''; return; }
+    const last = a => (a.length ? ': ' + a[a.length - 1].label : '');
+    el.innerHTML = `<div class="seg2" role="group" aria-label="Tool">
+        <button data-ftool="select" class="${placing ? '' : 'on'}" aria-pressed="${!placing}">ⓘ Select</button>
+        <button data-ftool="place" class="${placing ? 'on' : ''}" aria-pressed="${placing}">＋ Place</button></div>
+      <button class="btn icon" id="ftUndo" aria-label="Undo${U.esc(last(st.undoStack))}" ${st.undoStack.length ? '' : 'disabled'}>↶</button>
+      <button class="btn icon" id="ftRedo" aria-label="Redo${U.esc(last(st.redoStack))}" ${st.redoStack.length ? '' : 'disabled'}>↷</button>`;
+    el.querySelectorAll('[data-ftool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.ftool)));
+    $('ftUndo').addEventListener('click', () => st.undo());
+    $('ftRedo').addEventListener('click', () => st.redo());
+  }
+  function setTool(t) {
+    const st = ST();
+    st.ui.fieldTool = t; mode.target = null; mode.msg = '';
+    if (t === 'place' && st.ui.fieldRoute !== 'all') st.ui.activeRouteId = st.ui.fieldRoute;
+    renderTools(); renderSheet(); A().requestDraw();
+  }
+  function useRoute(id) {
+    const st = ST();
+    st.ui.activeRouteId = id;
+    if (st.ui.fieldRoute !== 'all') st.ui.fieldRoute = id;   // keep the new holds visible
+    mode.msg = ''; st.saveUi();
+    renderTop(); renderSheet(); A().requestDraw();
+  }
+  async function newRoute() {
+    const st = ST(), tool = st.ui.tool;
+    RE().addRoute();
+    st.ui.tool = tool;   // addRoute switches the desktop editor to Place; leave that alone
+    const r = st.activeRoute();
+    if (st.ui.fieldRoute !== 'all') st.ui.fieldRoute = r.id;
+    st.ui.fieldTab = 'map'; st.ui.fieldTool = 'place'; mode.msg = ''; st.saveUi();
+    A().renderPanels();
+    await routeDialog(r, true);
   }
 
   // ---- bottom sheet (hold detail) ---------------------------------------------------------------
   function renderSheet() {
     const st = ST(), el = $('fieldSheet'), sel = st.ui.selection, pl = sel?.kind === 'placement' ? st.placement(sel.id) : null;
-    if (!pl || (st.ui.fieldTab || 'map') !== 'map') { el.dataset.open = 'false'; el.innerHTML = ''; return; }
+    const tool = editable() ? st.ui.fieldTool : 'select', onMap = (st.ui.fieldTab || 'map') === 'map';
+    if (onMap && tool === 'place') { placeSheet(el); return; }
+    if (onMap && tool === 'pick' && pl) { moveSheet(el, pl); return; }
+    if (!pl || !onMap) { el.dataset.open = 'false'; el.innerHTML = ''; return; }
     const m = UI.describeMount(st, pl), cat = st.catalogItem(pl.catalogId), seq = sequence(), i = seq.findIndex(x => x.id === pl.id);
     const prog = st.progress?.items?.[pl.id] || { state: 'pending', note: '' };
     const routes = pl.routeIds.map(id => st.route(id)).filter(Boolean);
@@ -4547,6 +4715,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     el.innerHTML = `<div class="sheet-grab"></div>
       <div class="sheet-head"><span class="sw" style="background:${colourOf(pl)}"></span><div style="flex:1;min-width:0"><b style="font-size:18px">${U.esc(pl.label)}</b> <span class="muted">${U.esc(cat?.name || 'Hold')}${pl.marker ? ' · ' + (pl.marker === 'start' ? 'START' : 'FINISH') : ''}</span><br>${routes.map(r => `<span class="chip" style="border-color:${r.color}">${U.esc(r.name)}</span>`).join(' ')}</div>
         <button class="btn icon" id="shClose" aria-label="Close" style="min-width:44px;min-height:44px">✕</button></div>
+      ${editable() ? `<div class="editbar" role="group" aria-label="Edit this hold">
+        <button data-ed="rotl" aria-label="Rotate 15° anticlockwise"><b>↺</b>15°</button><button data-ed="rotr" aria-label="Rotate 15° clockwise"><b>↻</b>15°</button>
+        <button data-ed="move"><b>✥</b>Move</button><button data-ed="edit"><b>✎</b>Edit</button><button data-ed="del" class="danger"><b>✕</b>Delete</button></div>` : ''}
       ${m.ok ? `<div class="bighole" aria-label="Mounting hole">${U.esc(m.code)}</div>
         <div class="count">${U.esc(m.panelText)}<br><b>${U.esc(m.countText)}</b><br>${U.esc(m.offsetText)}<br>${U.esc(m.heightText)}</div>
         <p style="margin-top:6px">${UI.badge(m.conf)} <small class="muted">${S.CONF[m.conf]?.rank >= 3 ? 'Field-verified hole position.' : 'Estimated position — confirm on the wall before relying on it.'}</small></p>`
@@ -4558,11 +4729,139 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <div class="navbtns"><button class="btn" id="shPrev">◀ Prev</button><button class="btn" id="shShow">${photos.length ? 'Wall · Photo' : 'Show on wall'}</button><button class="btn" id="shNext">Next ▶</button></div>
       <p class="hint" style="text-align:center">${i + 1} of ${seq.length} · ordered ${st.ui.fieldSort === 'down' ? 'top → bottom' : 'bottom → top'}. Checklist = workflow progress, not a safety inspection.</p>`;
     el.querySelector('#shClose').addEventListener('click', () => { st.ui.selection = null; renderSheet(); A().requestDraw(); });
+    el.querySelectorAll('[data-ed]').forEach(b => b.addEventListener('click', () => {
+      const a = b.dataset.ed, cur = st.placement(pl.id);
+      if (!cur) return;
+      if (a === 'rotl' || a === 'rotr') RE().rotate(cur, a === 'rotl' ? -15 : 15);
+      else if (a === 'move') { st.ui.fieldTool = 'pick'; mode.msg = ''; renderTools(); renderSheet(); }
+      else if (a === 'edit') holdDialog(cur);
+      else if (a === 'del') RE().removeHold(cur);
+    }));
     el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => st.setProgress(pl.id, b.dataset.s)));
     el.querySelector('#shNote').addEventListener('change', e => st.setProgress(pl.id, stateOf(pl) === 'pending' && e.target.value ? 'needs_fix' : stateOf(pl), e.target.value));
     el.querySelector('#shPrev').addEventListener('click', () => step(-1));
     el.querySelector('#shNext').addEventListener('click', () => step(1));
     el.querySelector('#shShow').addEventListener('click', () => { if (photos.length) photoCompare(pl, m, photos); else focusHold(pl, 0.5); });
+  }
+
+  // Place tool: which route, which hold, which rotation; then tap holes on the wall.
+  function placeSheet(el) {
+    const st = ST(), p = st.project, ui = st.ui, route = p.routes.length ? st.activeRoute() : null, cat = st.catalogItem(ui.catalogId);
+    const kit = p.catalog.map(c => `<button data-cat="${U.esc(c.id)}" class="${c.id === ui.catalogId ? 'on' : ''}" aria-pressed="${c.id === ui.catalogId}">${C.svgFor(c, route?.color || '#c9a06a', 30)}<span>${U.esc(c.name)}</span></button>`).join('');
+    const hint = route ? `Tap a hole on the wall to add ${cat ? 'a ' + cat.name.toLowerCase() : 'the hold'} to ${route.name}.` : 'Make a route first.';
+    el.dataset.open = 'true';
+    el.innerHTML = `<div class="sheet-grab"></div>
+      <div class="pb-row">${route ? `<span class="sw" style="background:${route.color}"></span>
+        <select id="pbRoute" aria-label="Route the new holds go to">${p.routes.map(r => `<option value="${U.esc(r.id)}" ${r.id === route.id ? 'selected' : ''}>${U.esc(r.name)} · ${st.holdsOf(r.id).length} holds</option>`).join('')}<option value="__new">＋ New route…</option></select>
+        <button class="btn icon" id="pbEdit" aria-label="Edit route ${U.esc(route.name)}">✎</button>` : '<button class="btn primary bigbtn" id="pbNew" style="margin:0">＋ New route</button>'}</div>
+      <div class="pb-kit" role="group" aria-label="Hold to place">${kit}</div>
+      <div class="pb-row"><button class="btn icon" data-prot="-15" aria-label="Turn new holds 15° anticlockwise">↺</button>
+        <span class="pb-rot">${UI.rotGlyph(ui.placeRotation)}<span>${ui.placeRotation}° · ${U.clock(ui.placeRotation)}</span></span>
+        <button class="btn icon" data-prot="15" aria-label="Turn new holds 15° clockwise">↻</button></div>
+      <p class="hint" id="pbMsg" aria-live="polite">${U.esc(mode.msg || hint)}</p>`;
+    el.querySelector('#pbRoute')?.addEventListener('change', e => (e.target.value === '__new' ? newRoute() : useRoute(e.target.value)));
+    el.querySelector('#pbEdit')?.addEventListener('click', () => routeDialog(st.activeRoute()));
+    el.querySelector('#pbNew')?.addEventListener('click', newRoute);
+    el.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { ui.catalogId = b.dataset.cat; mode.msg = ''; renderSheet(); }));
+    el.querySelectorAll('[data-prot]').forEach(b => b.addEventListener('click', () => { ui.placeRotation = U.normDeg(ui.placeRotation + +b.dataset.prot); renderSheet(); }));
+    const strip = el.querySelector('.pb-kit'), on = strip.querySelector('.on');
+    if (on) strip.scrollLeft = on.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2;
+  }
+  // Move (from a selected hold's Edit bar): tap the new hole, or step one hole at a time.
+  function moveSheet(el, pl) {
+    const st = ST();
+    el.dataset.open = 'true';
+    el.innerHTML = `<div class="sheet-grab"></div>
+      <div class="sheet-head"><span class="sw" style="background:${colourOf(pl)}"></span><div style="flex:1;min-width:0"><b style="font-size:17px">Move ${U.esc(pl.label)}</b><br><span class="muted">Tap the new hole on the wall, or step one hole at a time.</span></div></div>
+      <div class="nudge" role="group" aria-label="Move one hole">${[['◀', '-1,0', 'left'], ['▲', '0,1', 'up'], ['▼', '0,-1', 'down'], ['▶', '1,0', 'right']].map(([g, d, l]) => `<button data-nudge="${d}" aria-label="One hole ${l}">${g}</button>`).join('')}</div>
+      <p class="hint" id="pbMsg" aria-live="polite">${U.esc(mode.msg)}</p>
+      <button class="btn primary bigbtn" id="mvDone">Done</button>`;
+    el.querySelectorAll('[data-nudge]').forEach(b => b.addEventListener('click', () => {
+      const [dx, dy] = b.dataset.nudge.split(',').map(Number), cur = st.placement(pl.id);
+      if (cur) RE().nudge(cur, dx, dy);
+    }));
+    el.querySelector('#mvDone').addEventListener('click', () => setTool('select'));
+  }
+
+  async function routeDialog(route, isNew) {
+    const st = ST(), app = A();
+    if (!route) return;
+    const res = await app.modal({ title: isNew ? 'New route' : 'Edit route', html: `
+      <div class="field"><label for="rdName">Name</label><input id="rdName" maxlength="80" value="${U.esc(route.name)}" autocomplete="off"></div>
+      <div class="grid2"><div class="field"><label for="rdGrade">Intended grade</label><input id="rdGrade" maxlength="20" value="${U.esc(route.grade)}" autocomplete="off"></div>
+      <div class="field"><label for="rdStatus">Status</label><select id="rdStatus">${S.ROUTE_STATUS.map(s => `<option ${s === route.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Colour</label><div class="swatches">${RE().PALETTE.map(c => `<button type="button" data-col="${c}" class="${c === route.color ? 'on' : ''}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('')}<input type="color" id="rdColor" value="${route.color}" aria-label="Other colour"></div></div>
+      <div class="field"><label for="rdNotes">Setter notes / intended movement</label><textarea id="rdNotes" maxlength="4000">${U.esc(route.notes)}</textarea></div>
+      ${isNew ? '' : '<div class="row"><button type="button" class="btn" id="rdDup">Duplicate…</button><button type="button" class="btn danger" id="rdDel">Delete route…</button></div>'}`,
+      buttons: [{ label: isNew ? 'Skip' : 'Cancel', value: null }, { label: 'Save', value: 'ok', kind: 'primary' }],
+      onOpen: (box, done) => {
+        box.querySelectorAll('[data-col]').forEach(b => b.addEventListener('click', () => {
+          box.querySelector('#rdColor').value = b.dataset.col;
+          box.querySelectorAll('[data-col]').forEach(x => x.classList.toggle('on', x === b));
+        }));
+        box.querySelector('#rdDup')?.addEventListener('click', () => done('dup'));
+        box.querySelector('#rdDel')?.addEventListener('click', () => done('del'));
+      } });
+    if (res.value === 'dup') return RE().duplicateRoute(route);
+    if (res.value === 'del') return RE().deleteRoute(route);
+    if (res.value !== 'ok') return;
+    const g = id => res.el.querySelector('#' + id).value;
+    const next = { name: g('rdName').trim().slice(0, 80) || 'Untitled route', grade: g('rdGrade').trim().slice(0, 20), status: g('rdStatus'), color: g('rdColor'), notes: g('rdNotes').slice(0, 4000) };
+    const cur = st.route(route.id);
+    if (!cur || Object.keys(next).every(k => next[k] === cur[k])) return;
+    st.commit('Edit route ' + next.name, p => {
+      Object.assign(p.routes.find(x => x.id === route.id), next);
+      RE().logRoute(p, route.id, 'Edited on the phone');
+    });
+  }
+
+  async function holdDialog(pl) {
+    const st = ST(), app = A(), p = st.project;
+    const opt = (list, sel) => list.map(([v, t]) => `<option value="${U.esc(v)}" ${v === sel ? 'selected' : ''}>${U.esc(t)}</option>`).join('');
+    const res = await app.modal({ title: 'Edit ' + pl.label, html: `
+      <div class="field"><label for="hdCat">Hold</label><select id="hdCat">${opt(p.catalog.filter(c => c.attachment === pl.attachment).map(c => [c.id, `${c.name} — ${c.sizeMm.w}×${c.sizeMm.h} mm`]), pl.catalogId)}</select></div>
+      <div class="grid2"><div class="field"><label for="hdRole">Use</label><select id="hdRole">${opt([['both', 'Hands + feet'], ['hands', 'Hands'], ['feet', 'Feet only']], pl.role)}</select></div>
+      <div class="field"><label for="hdMark">Marker</label><select id="hdMark">${opt([['', 'None'], ['start', 'Start'], ['finish', 'Finish']], pl.marker)}</select></div></div>
+      <div class="field"><label for="hdRot">Rotation (° clockwise from panel-up)</label><input id="hdRot" type="number" inputmode="numeric" step="5" value="${pl.rotation}"></div>
+      <div class="field"><label>Routes</label><div class="memb">${p.routes.map(r => `<label><input type="checkbox" data-memb="${U.esc(r.id)}" ${pl.routeIds.includes(r.id) ? 'checked' : ''}><span style="width:12px;height:12px;border-radius:50%;background:${r.color};display:inline-block"></span>${U.esc(r.name)}</label>`).join('')}</div>
+        <p class="hint">Tick more than one route only for a hold that is deliberately shared.</p></div>
+      <div class="field"><label class="check"><input type="checkbox" id="hdOwn" ${pl.color ? 'checked' : ''}> Own colour instead of the route colour</label><input type="color" id="hdColor" value="${pl.color || colourOf(pl)}" aria-label="Hold colour"></div>
+      <div class="field"><label for="hdNotes">Notes (movement, orientation, setting)</label><textarea id="hdNotes" maxlength="4000">${U.esc(pl.notes)}</textarea></div>`,
+      buttons: [{ label: 'Duplicate', value: 'dup' }, { label: 'Cancel', value: null }, { label: 'Save', value: 'ok', kind: 'primary' }],
+      onOpen: box => box.querySelector('#hdColor').addEventListener('input', () => { box.querySelector('#hdOwn').checked = true; }) });
+    if (res.value === 'dup') { const cur = st.placement(pl.id); if (cur) RE().duplicate(cur); return; }
+    if (res.value !== 'ok') return;
+    const q = s => res.el.querySelector(s), cur = st.placement(pl.id);
+    if (!cur) return;
+    const ticked = new Set([...res.el.querySelectorAll('[data-memb]')].filter(b => b.checked).map(b => b.dataset.memb));
+    const next = { catalogId: q('#hdCat').value, role: q('#hdRole').value, marker: q('#hdMark').value, rotation: U.normDeg(+q('#hdRot').value || 0),
+      // Keep the stored order (the first route gives the hold its colour), then append new ones.
+      routeIds: cur.routeIds.filter(r => ticked.has(r)).concat([...ticked].filter(r => !cur.routeIds.includes(r))),
+      color: q('#hdOwn').checked ? q('#hdColor').value : null, notes: q('#hdNotes').value.slice(0, 4000) };
+    if (Object.keys(next).every(k => JSON.stringify(next[k]) === JSON.stringify(cur[k]))) return;
+    st.commit('Edit ' + pl.label, p2 => {
+      const x = p2.placements.find(y => y.id === pl.id);
+      for (const r of next.routeIds) if (!x.routeIds.includes(r)) RE().logRoute(p2, r, 'Added ' + x.label);
+      for (const r of x.routeIds) if (!next.routeIds.includes(r)) RE().logRoute(p2, r, 'Removed ' + x.label);
+      Object.assign(x, next);
+    });
+  }
+
+  // On phones the share sheet is the dependable way to keep a file (Save to Files, Google Drive, AirDrop).
+  async function shareOrDownload(name, text, mime) {
+    try {
+      const file = new File([text], name, { type: mime });
+      if (window.matchMedia?.('(pointer: coarse)').matches && navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file] }); return 'shared'; }
+    } catch (e) { if (e.name === 'AbortError') return 'cancelled'; }
+    U.download(name, text, mime);
+    return 'downloaded';
+  }
+  async function saveProjectFile() {
+    const st = ST(), p = st.exportObject();
+    p.savedAt = U.nowIso();
+    const name = `${U.slug(p.name)}-${p.savedAt.slice(0, 16).replace(/[-:]/g, '').replace('T', '-')}.routeform.json`;
+    const how = await shareOrDownload(name, JSON.stringify(p, null, 1), 'application/json');
+    if (how !== 'cancelled') A().toast(`Project file ${how === 'shared' ? 'shared' : 'downloaded'}: ${name}. Open it on the computer with File → Open project.`, 'ok', 6500);
   }
 
   // Registered photos whose footprint contains this hold, with the hold's pixel position in each.
@@ -4651,8 +4950,15 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <div class="sep"></div>
       <h2>Layers</h2>
       ${[['photo', 'Photo underlay'], ['holes', 'Mounting holes'], ['fixtures', 'Fixed hardware (reference)'], ['ropes', 'Rope lines'], ['labels', 'Labels'], ['paint', 'Painted colour regions']].map(([k, t]) => `<label class="check" style="min-height:40px"><input type="checkbox" data-layer="${k}" ${L[k] ? 'checked' : ''}> ${t}</label>`).join('')}
+      ${editable() ? `<div class="sep"></div>
+      <h2>Routes</h2>
+      <div class="list">${p.routes.map(rt => `<button class="li" data-editroute="${U.esc(rt.id)}"><span class="sw" style="background:${rt.color}"></span><span class="main"><b>${U.esc(rt.name)}</b><span>${U.esc(rt.grade || 'no grade')} · ${U.esc(rt.status)} · ${st.holdsOf(rt.id).length} holds</span></span><span class="st" aria-hidden="true">✎</span></button>`).join('') || '<p class="muted">No routes yet.</p>'}</div>
+      <button class="btn bigbtn" id="mNewRoute" style="margin-top:8px">＋ New route</button>` : ''}
       <div class="sep"></div>
       <h2>Files</h2>
+      ${editable() ? `<button class="btn primary bigbtn" id="saveProj">Save project file (.json)</button>
+      <p class="hint" style="margin:-2px 0 10px">Everything, including edits made on this phone and the photos. Keep it in Google Drive or iCloud Drive and open it on the computer with File → Open project.${st.hasUnpublishedChanges() && p.revision ? ` <b>This plan has been edited since revision ${p.revision.number}.</b>` : ''}</p>`
+      : '<p class="hint" style="margin:-2px 0 10px">This offline copy is read-only. To edit on a phone, open the web version of ROUTEFORM and load this file there with <i>Load a plan file</i>.</p>'}
       <button class="btn bigbtn" id="dlOffline">Save offline copy of this plan (.html)</button>
       <button class="btn bigbtn" id="loadPlan">Load a plan file (.json / .html)…</button>
       ${!A().fieldOnly && window.innerWidth >= 760 ? '<button class="btn bigbtn" id="toEditor">Back to the editor</button>' : ''}
@@ -4685,6 +4991,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         requestAnimationFrame(() => { if (y === 'fit') app.view.fitSector(); else app.view.fitBand(+y - 200, Math.min(st.project.wall.height.value, +y + 3000) + 200); });
       }));
       el.querySelectorAll('[data-layer]').forEach(c => c.addEventListener('change', () => { st.ui.layers[c.dataset.layer] = c.checked; st.saveUi(); app.requestDraw(); }));
+      el.querySelectorAll('[data-editroute]').forEach(b => b.addEventListener('click', () => routeDialog(st.route(b.dataset.editroute))));
+      el.querySelector('#mNewRoute')?.addEventListener('click', newRoute);
+      el.querySelector('#saveProj')?.addEventListener('click', saveProjectFile);
       el.querySelector('#dlOffline').addEventListener('click', () => RF.exporters.exportFieldHtml({ fromPhone: true }));
       el.querySelector('#loadPlan').addEventListener('click', loadPlanFile);
       el.querySelector('#toEditor')?.addEventListener('click', () => app.setMode('route'));
@@ -4717,7 +5026,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     app.toast(`Nothing called "${q}".`, 'warn');
   }
   async function loadPlanFile() {
-    const app = A(), f = await app.pickFile('.json,.html,application/json,text/html');
+    const app = A();
+    if (editable() && ST().undoStack.length && !(await app.confirm('Replace the plan on this phone?', '<p>Edits made here are lost unless you saved them with <i>Save project file</i>.</p>', 'Choose a file'))) return;
+    const f = await app.pickFile('.json,.html,application/json,text/html');
     if (!f) return;
     let text = await U.readFile(f);
     if (/\.html?$/i.test(f.name) || text.trimStart().startsWith('<')) {
@@ -5133,7 +5444,41 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       check('Phone: tapping a hold shows its hole ID in the sheet', sheet.dataset.open === 'true' && sheet.textContent.includes(pos.hole.id), pos.hole.id);
       sheet.querySelector('[data-s="installed"]').click();
       check('Phone: checklist mark stored per revision', st.progress.items[fpl.id]?.state === 'installed');
-      const buttons = [...document.querySelectorAll('.field-tabs button, .rchip, .statusbtns button, .navbtns button')].filter(b => b.offsetParent);
+
+      // Phone editing: Place → tap a hole; Select → rotate, Move → tap, long-press drag, delete + undo.
+      const q = sel => document.querySelector(sel);
+      q('[data-ftool="place"]').click();
+      const rsel = q('#pbRoute'); rsel.value = 'route-b'; rsel.dispatchEvent(new Event('change'));
+      q('.pb-kit [data-cat="cat-jug"]').click();
+      const fh = [...st.index.holes.values()].find(x => !st.occupancy.has(x.id) && x.y > 3000 && x.x > 4500 && W.nearestFreeHole(st.index, st.occupancy, x.x + 400, x.y + 200, 300) && W.nearestFreeHole(st.index, st.occupancy, x.x - 400, x.y, 300));
+      v.centreOn(fh.x, fh.y, 0.3); await wait(30);
+      let [qx, qy] = v.toScreen(fh.x, fh.y);
+      const n0 = st.project.placements.length;
+      await tap(cv, qx + 5, qy - 5, 'touch');
+      const np = st.project.placements[st.project.placements.length - 1];
+      check('Phone editing: Place adds the hold to the chosen route on the tapped hole', st.project.placements.length === n0 + 1 && np.holeId === fh.id && np.routeIds.join() === 'route-b', np.holeId);
+      q('[data-ftool="select"]').click();
+      await tap(cv, qx, qy, 'touch');
+      q('[data-ed="rotr"]').click();
+      q('[data-ed="move"]').click();
+      const to = W.nearestFreeHole(st.index, st.occupancy, fh.x + 400, fh.y + 200, 300).hole;
+      [qx, qy] = v.toScreen(to.x, to.y);
+      await tap(cv, qx, qy, 'touch');
+      check('Phone editing: rotate, then Move to a tapped hole', st.placement(np.id).rotation === 15 && st.placement(np.id).holeId === to.id && st.ui.fieldTool === 'select', `${st.placement(np.id).holeId} @ ${st.placement(np.id).rotation}°`);
+      const dest = W.nearestFreeHole(st.index, st.occupancy, to.x - 400, to.y, 300).hole, [bx, by] = v.toScreen(dest.x, dest.y);
+      pointer(cv, 'pointerdown', qx, qy, 1, 'touch'); await wait(450);
+      pointer(cv, 'pointermove', bx, by, 1, 'touch'); pointer(cv, 'pointerup', bx, by, 1, 'touch'); await wait(30);
+      check('Phone editing: long press drags the selected hold to another hole', st.placement(np.id).holeId === dest.id, st.placement(np.id).holeId);
+      q('[data-ed="del"]').click();
+      const gone = !st.placement(np.id);
+      q('#ftUndo').click();
+      check('Phone editing: delete, then undo brings the hold back', gone && !!st.placement(np.id));
+      st.ui.selection = { kind: 'placement', id: np.id }; st.readOnly = true; app.renderPanels();
+      const roOk = q('#fieldTools').dataset.on === 'false' && !q('.editbar') && !q('#ftNewRoute') && sheet.dataset.open === 'true';
+      st.readOnly = false; st.ui.selection = { kind: 'placement', id: fpl.id }; app.renderPanels();
+      check('Phone: a read-only plan shows no editing tools', roOk);
+
+      const buttons = [...document.querySelectorAll('.field-tabs button, .rchip, .statusbtns button, .navbtns button, .seg2 button, .ftools .btn, .editbar button')].filter(b => b.offsetParent);
       const small = buttons.filter(b => { const r = b.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; });
       check('Phone: primary touch targets ≥ 44 px', !small.length, small.map(b => b.textContent.trim().slice(0, 12)).join(', '));
       check('Phone: no horizontal page overflow', document.documentElement.scrollWidth <= window.innerWidth + 1, `${document.documentElement.scrollWidth}px`);
@@ -5198,7 +5543,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     },
     onViewChange() { this.mode()?.onViewChange?.(); },
     onDrawn() { this.view.drawMinimap($('miniCanvas')); },
-    status(msg) { const el = $('status'); if (el) el.textContent = msg || ''; }
+    status(msg) { const el = $('status'); if (el) el.textContent = msg || ''; this.mode()?.onStatus?.(msg); }
   };
 
   // ---- skeleton --------------------------------------------------------------------
@@ -5236,6 +5581,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     <div id="layersPop" class="popover" hidden></div>
     <canvas id="miniCanvas" class="minimap" aria-label="Minimap — tap to move the view"></canvas>
     <div class="hud hud-bl" id="status" aria-live="polite"></div>
+    <div id="fieldTools" class="ftools" role="toolbar" aria-label="Phone editing tools"></div>
     <div id="fieldPage" class="field-page"></div>
     <div id="fieldSheet" class="field-sheet" role="dialog" aria-label="Hold details"></div>
   </main>
@@ -5387,7 +5733,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   app.setMode = (m) => {
     const st = app.store;
     if (app.fieldOnly && m !== 'field') return;
-    if (m !== 'field' && window.innerWidth < 760) { app.toast('Editing needs a wider screen (tablet landscape or desktop). The phone view is read-only.', 'warn'); m = 'field'; }
+    if (m !== 'field' && window.innerWidth < 760) { app.toast('The full editor needs a wider screen. On a phone, edit with Select / Place on the Wall tab.', 'warn'); m = 'field'; }
     app.climb?.close();
     const prev = app.mode();
     prev?.unmount?.();
