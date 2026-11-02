@@ -260,7 +260,7 @@ body.field .ftools .btn.ft-climb{width:auto;padding:0 14px;font-size:14px;font-w
 .swatches button{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}
 .swatches button.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
 .swatches input[type=color]{width:52px;height:40px;padding:2px}
-body.field input,body.field select,body.field textarea{font-size:16px}  /* smaller text makes iOS zoom into the field */
+body.field input,body.field select,body.field textarea{font-size:16px!important}  /* smaller text makes iOS zoom the whole page into the field */
 body.field .modal footer .btn{min-height:44px;padding:0 16px;font-size:14px}
 body.field .stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}  /* long press drags a hold, not a text selection */
 body.field .memb label{min-height:40px;font-size:14px}
@@ -273,7 +273,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T20:48:03.287Z">
+<meta name="routeform-build" content="2026-11-02T20:59:56.887Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -4988,7 +4988,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <div class="row" style="margin:8px 0;gap:10px">${UI.rotGlyph(pl.rotation)}<div><b>Rotation</b><br>${U.esc(UI.rotationText(pl, m))}</div></div>
       <dl class="kv"><dt>Use</dt><dd>${{ both: 'Hands + feet', hands: 'Hands', feet: 'Feet only' }[pl.role]}</dd><dt>Size</dt><dd>${cat ? `${cat.sizeMm.w}×${cat.sizeMm.h} mm ${UI.badge(cat.sizeConfidence)}` : '—'}</dd>${cat?.brand ? `<dt>Model</dt><dd>${U.esc(cat.brand)} ${U.esc(cat.inventoryId)}</dd>` : ''}${pl.notes ? `<dt>Notes</dt><dd>${U.esc(pl.notes)}</dd>` : ''}</dl>
       <div class="statusbtns" role="group" aria-label="Checklist status">${Object.entries(STATES).map(([k, v]) => `<button data-s="${k}" class="${prog.state === k ? 'on' : ''}" aria-pressed="${prog.state === k}">${v.icon} ${v.label}</button>`).join('')}</div>
-      <div class="field"><label for="shNote">On-wall note / deviation</label><input id="shNote" value="${U.esc(prog.note || '')}" placeholder="e.g. used hole one to the right" style="min-height:44px;font-size:15px"></div>
+      <div class="field"><label for="shNote">On-wall note / deviation</label><input id="shNote" value="${U.esc(prog.note || '')}" placeholder="e.g. used hole one to the right" style="min-height:44px;font-size:16px"></div>
       <div class="navbtns"><button class="btn" id="shPrev">◀ Prev</button><button class="btn" id="shShow">${photos.length ? 'Wall · Photo' : 'Show on wall'}</button><button class="btn" id="shNext">Next ▶</button></div>
       <p class="hint" style="text-align:center">${i + 1} of ${seq.length} · ordered ${st.ui.fieldSort === 'down' ? 'top → bottom' : 'bottom → top'}. Checklist = workflow progress, not a safety inspection.</p>`;
     el.querySelector('#shClose').addEventListener('click', () => { st.ui.selection = null; renderSheet(); A().requestDraw(); });
@@ -5170,7 +5170,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const st = ST(), seq = sequence(), f = st.ui.fieldRoute;
     return `<div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">${f === 'all' ? 'All routes' : U.esc(st.route(f)?.name)} · ${seq.length} holds</h2>
       <button class="btn" id="sortBtn" style="min-height:44px">${st.ui.fieldSort === 'down' ? 'Top → bottom' : 'Bottom → top'} ⇅</button></div>
-      <div class="field"><input id="findInput" placeholder="Find hold (H012), hole (C3.r05.c03) or panel (C3)" style="min-height:44px;font-size:15px" autocomplete="off"></div>
+      <div class="field"><input id="findInput" placeholder="Find hold (H012), hole (C3.r05.c03) or panel (C3)" style="min-height:44px;font-size:16px" autocomplete="off"></div>
       <div class="list">${seq.map(holdRow).join('') || '<p class="muted">No holds.</p>'}</div>`;
   }
   function checkPage() {
@@ -5211,7 +5211,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <div class="sep"></div>
       <h2>Jump</h2>
       <div class="row">${bands.join('')}<button class="btn" data-band="fit" style="min-height:44px">Full wall</button></div>
-      <div class="field" style="margin-top:8px"><input id="findInput" placeholder="Find hold, hole ID or panel" style="min-height:44px;font-size:15px" autocomplete="off"></div>
+      <div class="field" style="margin-top:8px"><input id="findInput" placeholder="Find hold, hole ID or panel" style="min-height:44px;font-size:16px" autocomplete="off"></div>
       <div class="sep"></div>
       <h2>Layers</h2>
       ${[['photo', 'Photo underlay'], ['holes', 'Mounting holes'], ['fixtures', 'Fixed hardware (reference)'], ['ropes', 'Rope lines'], ['labels', 'Labels'], ['paint', 'Painted colour regions']].map(([k, t]) => `<label class="check" style="min-height:40px"><input type="checkbox" data-layer="${k}" ${L[k] ? 'checked' : ''}> ${t}</label>`).join('')}
@@ -5799,6 +5799,10 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const small = buttons.filter(b => { const r = b.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; });
       check('Phone: primary touch targets ≥ 44 px', !small.length, small.map(b => b.textContent.trim().slice(0, 12)).join(', '));
       check('Phone: no horizontal page overflow', document.documentElement.scrollWidth <= window.innerWidth + 1, `${document.documentElement.scrollWidth}px`);
+      // iPhone Safari zooms the whole page into any text field under 16 px (hold note, Find boxes).
+      const fsz = el => (el ? parseFloat(getComputedStyle(el).fontSize) : 0), sizes = [fsz(q('#shNote'))];
+      for (const tab of ['list', 'more', 'map']) { q(`[data-ft="${tab}"]`).click(); await wait(50); if (tab !== 'map') sizes.push(fsz(q('#findInput'))); }
+      check('Phone: text fields are 16 px or larger, so iPhone Safari does not zoom in', sizes.every(z => z >= 16), sizes.join(' / ') + ' px');
       st.progress.items = {}; st.saveProgress();
 
       // Offline field file boots (only when the app code is inline, i.e. the built single file).
@@ -6210,7 +6214,16 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     document.addEventListener('keydown', onKey);
     // iOS Safari ignores user-scalable=no: in the phone view a pinch on the sheet or bars would zoom the
     // whole page and break the layout. The wall map keeps its own pinch zoom (pointer events).
-    for (const t of ['gesturestart', 'gesturechange']) document.addEventListener(t, e => { if (document.body.classList.contains('field')) e.preventDefault(); }, { passive: false });
+    // If the page is already zoomed in anyway, let the pinch through so it can be zoomed back out.
+    const pageZoomed = () => (window.visualViewport?.scale || 1) > 1.01;
+    for (const t of ['gesturestart', 'gesturechange']) document.addEventListener(t, e => { if (document.body.classList.contains('field') && !pageZoomed()) e.preventDefault(); }, { passive: false });
+    // After typing, snap a page that Safari zoomed into a text field back to normal size.
+    const vp = document.querySelector('meta[name=viewport]'), vpContent = vp?.content || '';
+    document.addEventListener('focusout', () => {
+      if (!vp || !document.body.classList.contains('field') || !pageZoomed()) return;
+      vp.content = vpContent + ', maximum-scale=1';
+      setTimeout(() => { vp.content = vpContent; }, 400);
+    });
     wireHud(); renderBands();
     new ResizeObserver(() => app.view.resize()).observe($('stage'));
     window.addEventListener('beforeunload', () => { if (st.saveState === 'saving') st.saveLocal(); });
