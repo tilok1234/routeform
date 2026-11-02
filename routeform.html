@@ -273,7 +273,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T20:43:16.569Z">
+<meta name="routeform-build" content="2026-11-02T20:48:03.287Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -5202,6 +5202,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <dl class="kv"><dt>Project</dt><dd>${U.esc(p.name)}</dd><dt>Revision</dt><dd>${r ? `${r.number} (${U.esc(r.id)}) · ${U.esc(r.createdAt)}` : 'unpublished draft'}</dd>
       <dt>Content</dt><dd class="mono">${U.esc(st.contentHash())}${r && r.contentHash !== st.contentHash() ? ' <span class="chip warn">differs from revision</span>' : ''}</dd>
       <dt>Wall</dt><dd>${U.esc(p.wall.name)}, ${U.esc(p.wall.facility)}</dd></dl>
+      ${editable() ? `<button class="btn primary bigbtn" id="newPlan">Other walls: ${RF.seed.walls.map(w => U.esc(w.name)).join(', ')}…</button>
+      <p class="hint" style="margin:-2px 0 0">Starts a new plan on the wall you pick. It replaces this plan, so save this one first (Files, below).</p>` : ''}
       <div class="sep"></div>
       <h2>Calibration</h2>
       <p>${prov.allVerified ? 'All holds sit on field-verified holes.' : `<b>${prov.onEstimated} of ${prov.total}</b> holds use estimated positions. Sector width ${(p.sector.width.value / 1000).toFixed(2)} m is ${S.CONF[p.sector.width.confidence].label.toLowerCase()}.`}</p>
@@ -5224,7 +5226,6 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       : '<p class="hint" style="margin:-2px 0 10px">This offline copy is read-only. To edit on a phone, open the web version of ROUTEFORM and load this file there with <i>Load a plan file</i>.</p>'}
       <button class="btn bigbtn" id="dlOffline">Save offline copy of this plan (.html)</button>
       <button class="btn bigbtn" id="loadPlan">Load a plan file (.json / .html)…</button>
-      ${editable() ? '<button class="btn bigbtn" id="newPlan">New plan on another wall…</button>' : ''}
       ${!A().fieldOnly && window.innerWidth >= 760 ? '<button class="btn bigbtn" id="toEditor">Back to the editor</button>' : ''}
       <div class="callout bad">ROUTEFORM is a planning aid. It does not certify routes, holds, anchors or protection as safe. Follow the gym's procedures and the setter's judgement.</div>`;
   }
@@ -6106,7 +6107,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       { label: 'Field measurement worksheet (.csv)', run: () => E.exportMeasurementCsv() },
       '-',
       { label: 'Publish revision (freeze for phone)…', run: () => E.publishRevisionDialog(), disabled: ro },
-      { label: 'New plan on a wall (Gråveggen, Galleriet)…', run: app.newPlanDialog, disabled: ro },
+      { label: `Other walls: new plan on ${RF.seed.walls.map(w => w.name).join(', ')}…`, run: app.newPlanDialog, disabled: ro },
       { label: 'About, limitations & keyboard shortcuts', run: about }
     ]);
   }
