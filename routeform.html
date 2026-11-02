@@ -223,7 +223,7 @@ body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T18:06:06.469Z">
+<meta name="routeform-build" content="2026-11-02T18:09:00.196Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -2821,6 +2821,8 @@ globalThis.RF_ASSETS = { photos: {} };
   }
   const revLabel = p => (p.revision ? `Revision ${p.revision.number} (${p.revision.createdAt.slice(0, 16).replace('T', ' ')})` : 'Unpublished draft');
   const baseName = p => U.slug(p.name) + (p.revision ? '-rev' + p.revision.number : '-draft');
+  // Public copy of site/ (the app without photos), pushed by tools/publish-site.mjs.
+  const HOSTED_URL = 'https://tilok1234.github.io/routeform/';
 
   // ---- self-contained field HTML ---------------------------------------------------------------
   async function appSource() {
@@ -2885,7 +2887,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
           : '<p>Run <code>node tools/serve.mjs --lan</code> in the project folder, open the address it prints on this computer, and use this button there. Phone and computer must share a network; no internet or account needed.</p>'}
         <p class="hint">The phone keeps the loaded plan in its browser storage. Over plain-HTTP Wi-Fi the page itself is not cached for offline use: keep the tab open, or save the offline copy from the phone's More tab (Android).</p></div>
       <div class="optcard"><h3>C · Hosted copy (HTTPS) + plan file</h3>
-        <p>If the <code>dist/</code> folder is hosted on any static HTTPS site, open it on the phone (it can be added to the home screen and then works offline), choose <i>More → Load a plan file</i> and pick the project JSON or the offline .html sent from here.</p>
+        <p>Open <b>${HOSTED_URL}</b> on the phone (iPhone: in Safari, then Share → <i>Add to Home Screen</i> so it also works offline), choose <i>More → Load a plan file</i> and pick the offline .html or project JSON sent from here, for example from Google Drive or iCloud Drive in the file picker.</p>
+        <p class="hint">That copy is public but contains none of your photos: they travel only inside the plan file. Update it after changing the code with <code>npm run publish:site</code>. Any other static HTTPS host works the same way with the <code>site/</code> folder.</p>
         <button class="btn" data-act="json">Download project JSON</button></div>
       <div class="optcard"><h3>Paper / image fallback</h3><button class="btn" data-act="sheets">Printable set sheets (.html)</button> <button class="btn" data-act="png">PNG overview</button> <button class="btn" data-act="field">Preview phone view here</button></div>`,
       buttons: [{ label: 'Close', value: null }],
