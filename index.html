@@ -273,7 +273,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T19:52:09.973Z">
+<meta name="routeform-build" content="2026-11-02T20:30:55.037Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1565,7 +1565,80 @@ globalThis.RF_ASSETS = { photos: {} };
     return p;
   }
 
-  RF.seed = { createGraveggenSeed, DEMO_ROUTES };
+  // Walls a new plan can start from (File menu / phone More page). seed-galleriet.js adds Galleriet.
+  const walls = [{ id: 'graveggen', name: 'Gråveggen', summary: '14.5 m rope wall. Sample sector with three demo routes.', create: createGraveggenSeed }];
+
+  RF.seed = { createGraveggenSeed, DEMO_ROUTES, walls };
+})(globalThis.RF = globalThis.RF || {});
+</script>
+<script data-rf>
+/* ROUTEFORM 0.2 — seed-galleriet.js
+ * "Galleriet" draft wall: an empty plan (no routes) for the 10 m rope wall rebuilt in 2020.
+ * Only the 10 m height and the 10 rope lines are reported figures. Panel sizes, width, hole pattern,
+ * colours and line positions are placeholders drawn by eye from public photos (references/other-walls:
+ * GA-02, GA-04, HA-01, HV-04). Those photos are third-party and are never embedded in a plan. */
+(function (RF) {
+  'use strict';
+  const U = RF.util, W = RF.wall;
+
+  const COLS = 12, COL_W = 1250, ROWS = [2500, 2500, 2500, 2500];
+  const LINE_GAP = 1500, LINE_COUNT = 10, ANCHOR_Y = 9750;
+  const DRAW_HEIGHTS = [2300, 3200, 4100, 5000, 5900, 6800, 7700, 8600];
+  const PHOTOS = 'public photos GA-02, GA-04, HA-01 and HV-04 (references/other-walls)';
+
+  function createGallerietDraft() {
+    const now = U.nowIso(), width = COLS * COL_W;
+    const p = {
+      schema: RF.schema.SCHEMA, schemaVersion: RF.schema.VERSION, app: 'ROUTEFORM 0.2',
+      projectId: 'galleriet-draft', name: 'Galleriet — draft wall (PRELIMINARY)',
+      createdAt: now, updatedAt: now, revision: null, units: 'mm',
+      coordinateSystem: {
+        origin: 'Bottom-left corner of the modelled wall area at floor / reference level',
+        xAxis: 'right', yAxis: 'up (front elevation)',
+        note: 'Front-elevation projection. Galleriet is reported as vertical to slightly overhanging; on angled sections, projected distances are shorter than on the wall.'
+      },
+      wall: {
+        id: 'vulkan-galleriet', name: 'Galleriet', facility: 'Vulkan Klatresenter, Oslo',
+        height: { value: 10000, confidence: 'reported', source: 'Kolsås Klatreklubb: about 10 m, vertical to slightly overhanging. Not measured.', verification: null },
+        modelWidth: { value: width, confidence: 'illustrative', source: `Guess: room for the reported 10 rope lines about ${LINE_GAP / 1000} m apart. Real width not measured.`, verification: null },
+        floorOffset: { value: 0, confidence: 'illustrative', source: 'Relation between floor and lowest hole row not measured.', verification: null },
+        ropeLinesTotal: { value: LINE_COUNT, confidence: 'reported', source: 'Kolsås Klatreklubb: 10 rope lines on Galleriet.' },
+        notes: `Draft drawn from ${PHOTOS}. Only the 10 m height and the 10 rope lines are reported; everything else is a placeholder. Rebuilt in 2020, probably by Entre-Prises: the builder's drawings would beat any photo.`
+      },
+      sector: {
+        id: 'sector-1', name: 'Whole wall (draft)',
+        x0: { value: 0, confidence: 'illustrative', source: 'Placeholder: the whole modelled wall.', verification: null },
+        width: { value: width, confidence: 'illustrative', source: 'UNVERIFIED placeholder: the whole modelled width. Edit once measured.', verification: null },
+        notes: 'Covers the whole draft wall until a setting area is chosen.'
+      },
+      layout: { cols: COLS, colWidth: COL_W, rowHeights: ROWS.slice(), x0: 0, confidence: 'illustrative' },
+      panels: [], paint: [], fixtures: [], catalog: RF.catalog.defaultCatalog(), routes: [], placements: [], photos: [],
+      surveyLog: [{ at: now, kind: 'seed', target: 'project', note: `Galleriet draft created from ${PHOTOS}. All panel, hole and fixture geometry is illustrative.` }],
+      counters: { hold: 0 }
+    };
+    const grid = { ...W.defaultGrid(), source: 'ILLUSTRATIVE: photos GA-02 and GA-04 show an even, staggered hole pattern; its pitch, phase and edge margin are not measured. 200 mm is a placeholder.' };
+    p.panels = W.tilePanels(p, { cols: COLS, colWidth: COL_W, rowHeights: ROWS, x0: 0, confidence: 'illustrative', defaultGrid: grid,
+      source: `ILLUSTRATIVE ${COL_W / 1000} × ${ROWS[0] / 1000} m placeholder panels. Real panel sizes, seams and angles are not measured.` });
+    for (const pn of p.panels) pn.pose3d.note = 'Angle unknown: Galleriet is reported as vertical to slightly overhanging. Drawn flat.';
+
+    const paintNote = `Colour drawn by eye from ${PHOTOS}: a surface colour, NOT a measured facet. Some of these boundaries may be folds in the wall.`;
+    p.paint = [
+      { id: 'paint-blue', label: 'Light blue section', color: '#bcd3ea', polygon: [[0, 0], [4500, 0], [3600, 10000], [0, 10000]], note: paintNote },
+      { id: 'paint-right', label: 'Right-hand section (possibly angled)', color: '#e6e9ed', polygon: [[11500, 0], [width, 0], [width, 10000], [13200, 10000]], note: paintNote }
+    ];
+
+    const fxSrc = 'ILLUSTRATIVE: 10 lines is the reported count; positions are spread evenly. Not surveyed; not an installation or safety reference.';
+    for (let i = 0; i < LINE_COUNT; i++) {
+      const n = i + 1, line = 'line-' + n, x = LINE_GAP / 2 + i * LINE_GAP;
+      p.fixtures.push({ id: line, kind: 'rope_line', label: 'L' + n, lineId: line, x, y: ANCHOR_Y, confidence: 'illustrative', source: fxSrc, verification: null, notes: '' });
+      p.fixtures.push({ id: 'anchor-' + n, kind: 'top_anchor', label: 'T' + n, lineId: line, x, y: ANCHOR_Y, confidence: 'illustrative', source: fxSrc, verification: null, notes: 'Y-shaped top anchors are visible in photos GA-02 and HV-04; position illustrative.' });
+      DRAW_HEIGHTS.forEach((y, k) => p.fixtures.push({ id: `draw-${n}-${k + 1}`, kind: 'protection_point', label: `L${n}·${k + 1}`, lineId: line, x: x + 190, y, confidence: 'illustrative', source: fxSrc, verification: null, notes: '' }));
+    }
+    return p;
+  }
+
+  RF.seed.createGallerietDraft = createGallerietDraft;
+  RF.seed.walls.push({ id: 'galleriet', name: 'Galleriet', summary: '10 m rope wall, 10 lines. Empty draft: no routes yet, geometry estimated from photos.', create: createGallerietDraft });
 })(globalThis.RF = globalThis.RF || {});
 </script>
 <script data-rf>
@@ -5000,6 +5073,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       : '<p class="hint" style="margin:-2px 0 10px">This offline copy is read-only. To edit on a phone, open the web version of ROUTEFORM and load this file there with <i>Load a plan file</i>.</p>'}
       <button class="btn bigbtn" id="dlOffline">Save offline copy of this plan (.html)</button>
       <button class="btn bigbtn" id="loadPlan">Load a plan file (.json / .html)…</button>
+      ${editable() ? '<button class="btn bigbtn" id="newPlan">New plan on another wall…</button>' : ''}
       ${!A().fieldOnly && window.innerWidth >= 760 ? '<button class="btn bigbtn" id="toEditor">Back to the editor</button>' : ''}
       <div class="callout bad">ROUTEFORM is a planning aid. It does not certify routes, holds, anchors or protection as safe. Follow the gym's procedures and the setter's judgement.</div>`;
   }
@@ -5035,6 +5109,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       el.querySelector('#saveProj')?.addEventListener('click', saveProjectFile);
       el.querySelector('#dlOffline').addEventListener('click', () => RF.exporters.exportFieldHtml({ fromPhone: true }));
       el.querySelector('#loadPlan').addEventListener('click', loadPlanFile);
+      el.querySelector('#newPlan')?.addEventListener('click', () => app.newPlanDialog());
       el.querySelector('#toEditor')?.addEventListener('click', () => app.setMode('route'));
     }
   }
@@ -5482,6 +5557,14 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       check('Save/load round trip validates and keeps every hold', res.ok && res.project.placements.length === st.project.placements.length && S.contentHash(res.project) === st.contentHash());
       check('Malformed project is rejected atomically', !S.validateProject('{"schema":"routeform.project","panels":"x"}').ok && st.project.placements.length > 0);
 
+      // New plan on another wall: the Galleriet draft replaces the plan, and undo brings the old one back.
+      const hashBeforeNew = st.contentHash(), newPlan = app.newPlanDialog(); await wait(50);
+      document.querySelector('.modal [data-wall="galleriet"]').click(); await newPlan; await wait(50);
+      const gp = st.project, gLines = gp.fixtures.filter(f => f.kind === 'rope_line').length, gHoles = st.index.count;
+      const gOk = gp.wall.name === 'Galleriet' && gLines === 10 && !gp.routes.length && !gp.photos.length && gHoles > 1000;
+      st.undo();
+      check('New plan: Galleriet draft (10 lines, no routes or photos); undo brings the old plan back', gOk && st.contentHash() === hashBeforeNew, `${gHoles} holes`);
+
       // Phone view: tap a hold, bottom sheet shows the hole reference.
       app.setMode('field'); await wait(250);
       const fpl = st.project.placements.find(x => x.marker === 'start'), pos = W.placementPosition(st.index, fpl);
@@ -5859,21 +5942,32 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       { label: 'Field measurement worksheet (.csv)', run: () => E.exportMeasurementCsv() },
       '-',
       { label: 'Publish revision (freeze for phone)…', run: () => E.publishRevisionDialog(), disabled: ro },
-      { label: 'Reset to Gråveggen seed project…', run: resetSeed, disabled: ro },
+      { label: 'New plan on a wall (Gråveggen, Galleriet)…', run: app.newPlanDialog, disabled: ro },
       { label: 'About, limitations & keyboard shortcuts', run: about }
     ]);
   }
-  async function resetSeed() {
-    if (!(await app.confirm('Reset to seed?', '<p>Replace the current project with the preliminary Gråveggen seed (three demo routes). This can be undone with Ctrl+Z.</p>', 'Reset', 'danger'))) return;
-    const seed = RF.seed.createGraveggenSeed();
-    for (const ph of seed.photos) if (ph.dataUrl) { app.store.photoData.set(ph.id, ph.dataUrl); ph.dataRef = ph.id; ph.dataUrl = null; }
-    app.store.replace('Reset to seed', seed);
-    app.store.decodePhotos();
+  // Start a new plan on one of the built-in walls (desktop File menu and the phone's More page).
+  app.newPlanDialog = async () => {
+    const st = app.store, walls = RF.seed.walls;
+    const res = await app.modal({ title: 'New plan', html: `
+      <p>Start a new plan on one of these walls. It replaces the plan that's open now, so save that first if you want to keep it. Undo brings it back until you close the page.</p>
+      <div class="list">${walls.map(w => `<button type="button" class="li" data-wall="${U.esc(w.id)}"><span class="main"><b>${U.esc(w.name)}</b><span>${U.esc(w.summary)}</span></span></button>`).join('')}</div>`,
+      buttons: [{ label: 'Cancel', value: null }],
+      onOpen: (box, done) => box.querySelectorAll('[data-wall]').forEach(b => b.addEventListener('click', () => done(b.dataset.wall))) });
+    const wall = walls.find(w => w.id === res.value);
+    if (!wall || st.readOnly) return;
+    const p = wall.create();
+    for (const ph of p.photos) if (ph.dataUrl) { st.photoData.set(ph.id, ph.dataUrl); ph.dataRef = ph.id; ph.dataUrl = null; }
+    st.ui.selection = null; st.ui.fieldTab = 'map'; st.ui.fieldRoute = 'all';
+    st.replace('New plan: ' + wall.name, p);
+    st.decodePhotos();
     app.view.fitSector();
-  }
+    app.renderPanels();
+    app.toast(`New plan on ${wall.name}. Its wall geometry is a placeholder, not measured.`, 'warn', 6000);
+  };
   function about() {
-    app.modal({ title: 'ROUTEFORM 0.2 — Gråveggen planning aid', wide: true, html: `
-      <p>A planning and communication aid for an experienced routesetter: one continuous Gråveggen sector, three concurrent routes, holds attached to mounting-hole identities, and a phone reference view.</p>
+    app.modal({ title: 'ROUTEFORM 0.2 — Vulkan routesetting planning aid', wide: true, html: `
+      <p>A planning and communication aid for an experienced routesetter: one wall per plan (Gråveggen, or the Galleriet draft), concurrent routes, holds attached to mounting-hole identities, and a phone reference view.</p>
       <div class="callout bad">Not a safety, engineering, anchor, climbability or grading tool. It never approves protection, anchors or routes.</div>
       <h3>Keyboard (desktop)</h3>
       <dl class="kv"><dt>Ctrl+Z / Ctrl+Y</dt><dd>Undo / redo</dd><dt>P / Esc</dt><dd>Place tool / back to select</dd><dt>R / Shift+R</dt><dd>Rotate selected hold ±15°</dd>
