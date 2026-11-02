@@ -9,7 +9,7 @@
 <style data-rf>
 /* ROUTEFORM 0.2 — styles.css (desktop editor + phone field view) */
 :root{color-scheme:dark;--bg:#0c111b;--panel:#141d2a;--panel2:#1b2635;--line:#2a384a;--txt:#eaf1fa;--muted:#93a5bd;--accent:#e3a25f;--accent2:#f1bd88;--warn:#ffb35c;--bad:#ff7b72;--ok:#57c38b;--radius:12px;--fieldbar:56px}
-*{box-sizing:border-box}
+*{box-sizing:border-box;touch-action:manipulation}  /* no double-tap page zoom on phones; the wall map has its own pinch zoom */
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.4;font-size:13px;-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -86,6 +86,23 @@ p{margin:0 0 8px}
 .cb-opts .chip{cursor:pointer;margin-left:auto}
 .cb-note{margin:0;font-size:11px;color:var(--muted);line-height:1.35}
 .stage.climbing #status{display:none}
+/* phone: the player bar spans the bottom of the map; scrubber on its own line, options scroll sideways */
+body.field .climbbar{left:6px;right:6px;bottom:6px;max-width:620px;padding:8px 10px 10px;gap:6px}
+body.field .climbbar .cb-row:first-child{display:grid;grid-template-columns:12px minmax(0,1fr) 44px;column-gap:8px;row-gap:1px}
+body.field .cb-row:first-child .sw{grid-area:1/1}
+body.field .cb-title{grid-area:1/2;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+body.field .cb-move{grid-area:2/1/3/3;white-space:normal;font-size:13px;line-height:1.3}
+body.field #cbClose{grid-area:1/3/3/4}
+body.field .climbbar .btn{min-height:44px;min-width:44px}
+body.field .climbbar .cb-row:nth-child(2){flex-wrap:wrap}
+body.field .cb-play{flex:1}
+body.field .cb-scrub{flex-basis:100%;height:26px;margin:0}
+body.field .cb-opts{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+body.field .cb-opts::-webkit-scrollbar{display:none}
+body.field .cb-opts label{flex:none;font-size:13px;white-space:nowrap}
+body.field .cb-opts select{min-height:44px}
+body.field .cb-opts .chip{order:-1;flex:none;margin-left:0;min-height:44px}
+body.field .stage.climbing .hud-tl,body.field .stage.climbing .minimap{display:none}
 .popover{position:absolute;top:48px;right:8px;z-index:20;background:#172231;border:1px solid #3b4a60;border-radius:10px;padding:10px;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .check{display:flex;align-items:center;gap:8px;font-size:12px;color:#d1deee;padding:4px 0;cursor:pointer}
 .check input{accent-color:var(--accent);width:16px;height:16px}
@@ -216,11 +233,13 @@ body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z
 .bigbtn{width:100%;min-height:50px;font-size:14px;margin-bottom:8px}
 /* phone editing: Select / Place tools, edit bar, place bar, move pad */
 .ftools{display:none}
-body.field .ftools[data-on=true]{display:flex;position:absolute;top:8px;left:8px;z-index:12;gap:6px;align-items:center}
+body.field .ftools[data-on=true]{display:flex;flex-wrap:wrap;position:absolute;top:8px;left:8px;right:60px;z-index:12;gap:6px;align-items:center;pointer-events:none}
+body.field .ftools>*{pointer-events:auto}
 .seg2{display:flex;background:rgba(18,26,38,.92);border:1px solid #3b4a60;border-radius:12px;padding:3px;gap:3px}
 .seg2 button{min-height:44px;min-width:68px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:13px;color:#c3d2e4;padding:0 8px}
 .seg2 button.on{background:#e9eef5;color:#111}
 body.field .ftools .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:rgba(18,26,38,.82)}
+body.field .ftools .btn.ft-climb{width:auto;padding:0 14px;font-size:14px;font-weight:700;border-color:#c98a4a;color:#ffd9b0}
 .editbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 2px}
 .editbar button,.nudge button{min-height:50px;border-radius:10px;border:1px solid #3b4a60;background:#1b2636;font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
 .editbar button b{font-size:18px;line-height:1}
@@ -254,7 +273,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T18:34:16.189Z">
+<meta name="routeform-build" content="2026-11-02T19:52:09.973Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -2550,6 +2569,8 @@ globalThis.RF_ASSETS = { photos: {} };
       }, { passive: false });
       c.addEventListener('contextmenu', e => e.preventDefault());
       c.addEventListener('dblclick', e => {
+        // Mouse only: on a phone two quick taps are two taps (placing holds, picking one); pinch zooms.
+        if (this.lastPointer && this.lastPointer !== 'mouse') return;
         const r = c.getBoundingClientRect();
         if (!this.app.mode()?.onDoubleTap?.(e.clientX - r.left, e.clientY - r.top)) this.zoomBy(2, e.clientX - r.left, e.clientY - r.top);
       });
@@ -2557,6 +2578,7 @@ globalThis.RF_ASSETS = { photos: {} };
     pt(e) { const r = this.canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
     onDown(e) {
       const [x, y] = this.pt(e);
+      this.lastPointer = e.pointerType;
       try { this.canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
       this.pointers.set(e.pointerId, { x, y });
       if (this.pointers.size === 2) {
@@ -4485,8 +4507,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
  * Phone-first view: the wall map stays primary; route chips filter; tapping a hold opens a bottom
  * sheet with the unambiguous hole reference, counting instructions, offset, rotation and checklist
  * state. Unless the plan is a read-only offline copy, the Select / Place tools also edit it on the
- * phone (placement logic shared with the desktop editor via RF.routeEdit). Checklist progress is a
- * separate, exportable session. */
+ * phone (placement logic shared with the desktop editor via RF.routeEdit). ▶ Climb plays the climber
+ * animation (ui-climb.js) for one route. Checklist progress is a separate, exportable session. */
 (function (RF) {
   'use strict';
   const U = RF.util, W = RF.wall, G = RF.geo, S = RF.schema, UI = RF.ui, C = RF.catalog;
@@ -4496,6 +4518,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   const SNAP_PX = 40;          // finger-sized reach to the nearest hole
   const MIN_PLACE_S = 0.09;    // below this zoom (≈18 px per 200 mm) a tap zooms in instead of placing
   const editable = () => !ST().readOnly;
+  const climbing = () => !!A().climb?.active;
 
   const mode = {
     target: null, msg: '', flashTimer: 0,
@@ -4503,6 +4526,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     unmount() { $('fieldSheet').dataset.open = 'false'; $('fieldPage').dataset.open = 'false'; $('fieldTools').dataset.on = 'false'; this.target = null; A().dragState = null; },
     renderPanels() { renderTop(); renderTabs(); renderTools(); renderSheet(); renderPage(); },
     onTap(px, py) {
+      if (climbing()) return;   // the map only pans and zooms while the climber plays
       const st = ST(), app = A(), tool = editable() ? st.ui.fieldTool : 'select';
       if (tool === 'place' || tool === 'pick') {
         if (app.view.v.s < MIN_PLACE_S) {
@@ -4532,7 +4556,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     // Dragging (Select tool): only the selected hold, after a long press on touch (see render.js).
     dragTarget(px, py) {
       const st = ST();
-      if (!editable() || st.ui.fieldTool !== 'select' || (st.ui.fieldTab || 'map') !== 'map') return null;
+      if (!editable() || climbing() || st.ui.fieldTool !== 'select' || (st.ui.fieldTab || 'map') !== 'map') return null;
       const hit = A().view.hitHold(px, py);
       return hit && st.ui.selection?.id === hit.id ? hit.id : null;
     },
@@ -4576,6 +4600,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     onServer() { renderPage(); },
     onKey(e) {
       const st = ST();
+      if (climbing()) return;
       if (e.key === 'Escape') { if (st.ui.fieldTool !== 'select') { setTool('select'); return; } st.ui.selection = null; renderSheet(); A().requestDraw(); }
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step(1);
       if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') step(-1);
@@ -4648,6 +4673,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const sel = st.placement(ui.selection?.id);
       if (sel && ui.fieldRoute !== 'all' && !sel.routeIds.includes(ui.fieldRoute)) ui.selection = null;
       renderTop(); renderSheet(); renderPage(); A().requestDraw();
+      if (climbing()) { if (ui.fieldRoute === 'all') A().climb.close(); else A().climb.open(ui.fieldRoute); }   // watch the route you picked
     }));
     $('ftNewRoute')?.addEventListener('click', newRoute);
     $('ftWarn').addEventListener('click', calibrationInfo);
@@ -4657,24 +4683,35 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const t = ST().ui.fieldTab || 'map';
     const tabs = [['map', '▦', 'Wall'], ['list', '☰', 'Holds'], ['check', '✓', 'Checklist'], ['more', '⋯', 'More']];
     $('fieldTabs').innerHTML = tabs.map(([k, i, l]) => `<button data-ft="${k}" class="${t === k ? 'on' : ''}" aria-pressed="${t === k}"><b>${i}</b>${l}</button>`).join('');
-    $('fieldTabs').querySelectorAll('[data-ft]').forEach(b => b.addEventListener('click', () => { ST().ui.fieldTab = b.dataset.ft; renderTabs(); renderTools(); renderPage(); renderSheet(); }));
+    $('fieldTabs').querySelectorAll('[data-ft]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.ft !== 'map') A().climb?.close();
+      ST().ui.fieldTab = b.dataset.ft; renderTabs(); renderTools(); renderPage(); renderSheet();
+    }));
   }
 
-  // ---- editing tools (Select / Place, undo, redo) --------------------------------------------
+  // ---- Wall tab tools (Select / Place, undo, redo; ▶ Climb also in read-only copies) ----------
   function renderTools() {
-    const st = ST(), el = $('fieldTools'), placing = st.ui.fieldTool === 'place';
-    const on = editable() && (st.ui.fieldTab || 'map') === 'map';
+    const st = ST(), el = $('fieldTools'), placing = st.ui.fieldTool === 'place', edit = editable(), canClimb = st.project.routes.length > 0;
+    const on = (st.ui.fieldTab || 'map') === 'map' && !climbing() && (edit || canClimb);
     el.dataset.on = String(on);
     if (!on) { el.innerHTML = ''; return; }
     const last = a => (a.length ? ': ' + a[a.length - 1].label : '');
-    el.innerHTML = `<div class="seg2" role="group" aria-label="Tool">
+    el.innerHTML = (edit ? `<div class="seg2" role="group" aria-label="Tool">
         <button data-ftool="select" class="${placing ? '' : 'on'}" aria-pressed="${!placing}">ⓘ Select</button>
         <button data-ftool="place" class="${placing ? 'on' : ''}" aria-pressed="${placing}">＋ Place</button></div>
       <button class="btn icon" id="ftUndo" aria-label="Undo${U.esc(last(st.undoStack))}" ${st.undoStack.length ? '' : 'disabled'}>↶</button>
-      <button class="btn icon" id="ftRedo" aria-label="Redo${U.esc(last(st.redoStack))}" ${st.redoStack.length ? '' : 'disabled'}>↷</button>`;
+      <button class="btn icon" id="ftRedo" aria-label="Redo${U.esc(last(st.redoStack))}" ${st.redoStack.length ? '' : 'disabled'}>↷</button>` : '')
+      + (canClimb ? `<button class="btn ft-climb" id="ftClimb" aria-label="Watch a climber try ${U.esc(st.route(climbRoute())?.name || 'the route')}">▶ Climb</button>` : '');
     el.querySelectorAll('[data-ftool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.ftool)));
-    $('ftUndo').addEventListener('click', () => st.undo());
-    $('ftRedo').addEventListener('click', () => st.redo());
+    $('ftUndo')?.addEventListener('click', () => st.undo());
+    $('ftRedo')?.addEventListener('click', () => st.redo());
+    $('ftClimb')?.addEventListener('click', () => A().climb.open(climbRoute()));
+  }
+  // The route chip you picked; on "All routes", the selected hold's route or the one you last worked on.
+  function climbRoute() {
+    const st = ST(), sel = st.placement(st.ui.selection?.id);
+    if (st.ui.fieldRoute !== 'all' && st.route(st.ui.fieldRoute)) return st.ui.fieldRoute;
+    return sel?.routeIds.find(id => st.route(id)) || (st.route(st.ui.activeRouteId) ? st.ui.activeRouteId : st.project.routes[0]?.id);
   }
   function setTool(t) {
     const st = ST();
@@ -4691,6 +4728,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   }
   async function newRoute() {
     const st = ST(), tool = st.ui.tool;
+    A().climb?.close();
     RE().addRoute();
     st.ui.tool = tool;   // addRoute switches the desktop editor to Place; leave that alone
     const r = st.activeRoute();
@@ -4704,6 +4742,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   function renderSheet() {
     const st = ST(), el = $('fieldSheet'), sel = st.ui.selection, pl = sel?.kind === 'placement' ? st.placement(sel.id) : null;
     const tool = editable() ? st.ui.fieldTool : 'select', onMap = (st.ui.fieldTab || 'map') === 'map';
+    if (climbing()) { el.dataset.open = 'false'; el.innerHTML = ''; return; }   // the player bar takes the bottom
     if (onMap && tool === 'place') { placeSheet(el); return; }
     if (onMap && tool === 'pick' && pl) { moveSheet(el, pl); return; }
     if (!pl || !onMap) { el.dataset.open = 'false'; el.innerHTML = ''; return; }
@@ -5060,8 +5099,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 </script>
 <script data-rf>
 /* ROUTEFORM 0.2 — ui-climb.js
- * Climber player for the routesetting view: open it on a route, then play/pause, step, scrub,
- * pick the figure's size and speed, and let the view follow. Draws the figure over the wall.
+ * Climber player for the routesetting view and the phone view: open it on a route, then play/pause,
+ * step, scrub, pick the figure's size and speed, and let the view follow. Draws the figure over the wall.
  * The rules and body model live in climber.js; nothing here changes the project. */
 (function (RF) {
   'use strict';
@@ -5084,11 +5123,13 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 
     open(routeId) {
       const app = A(), st = ST();
-      if (!routeId || st.ui.mode !== 'route') return;
+      if (!routeId || !['route', 'field'].includes(st.ui.mode)) return;
       if (this.active) this.close();
       this.routeId = routeId; this.t = 0; this.plan = null;
       if (!this.replan()) return;
       st.ui.activeRouteId = routeId; st.ui.selection = null; st.ui.tool = 'select';
+      // Phone: show just this route on the Wall tab; the editing tools step aside while it plays.
+      if (st.ui.mode === 'field') { st.ui.fieldRoute = routeId; st.ui.fieldTab = 'map'; st.ui.fieldTool = 'select'; }
       this.prevDisplay = st.ui.display;
       if (st.ui.display === 'all') st.ui.display = 'focus';
       this.unsub = st.on(type => this.onStore(type));
@@ -5159,18 +5200,23 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     },
 
     // ---- view -------------------------------------------------------------------------------
-    /* Zoom so the figure fills about 40 % of the view height, centred on its current pose. */
+    /* Height of the wall view hidden behind the player bar (taller on a phone). */
+    covered() {
+      const bar = $('climbBar'), stage = $('stage');
+      return bar && stage ? Math.max(0, stage.getBoundingClientRect().bottom - bar.getBoundingClientRect().top) : 150;
+    },
+    /* Zoom so the figure fills about 40 % of the visible height, centred on its current pose. */
     frameView() {
-      const view = A().view, b = this.plan.body, pose = CL.poseAt(this.plan, this.t);
-      const s = U.clamp((view.h - 150) * 0.42 / b.H, 0.03, 0.6);
-      view.setView({ s, ox: view.w / 2 - pose.q.x * s, oy: (view.h - 120) / 2 + (pose.q.y + b.torso * 0.4) * s });
+      const view = A().view, b = this.plan.body, pose = CL.poseAt(this.plan, this.t), hv = Math.max(view.h * 0.35, view.h - this.covered());
+      const s = U.clamp(hv * 0.42 / b.H, 0.03, 0.6);
+      view.setView({ s, ox: view.w / 2 - pose.q.x * s, oy: hv / 2 + (pose.q.y + b.torso * 0.4) * s });
     },
     /* Keep the figure inside the middle of the view (and clear of the player bar). */
     follow(force) {
       if (!force && !this.prefs().follow) return;
       const view = A().view, b = this.plan.body, pose = CL.poseAt(this.plan, this.t);
       const [sx, sy] = view.toScreen(pose.q.x, pose.q.y + b.torso * 0.4);
-      const mx = view.w * 0.3, top = view.h * 0.25, bottom = view.h - 150 - view.h * 0.12;
+      const mx = view.w * 0.3, top = view.h * 0.25, bottom = view.h - this.covered() - view.h * 0.08;
       const dx = sx < mx ? mx - sx : sx > view.w - mx ? view.w - mx - sx : 0;
       const dy = sy < top ? top - sy : sy > bottom ? bottom - sy : 0;
       if (!dx && !dy) return;
@@ -5233,7 +5279,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       if (cuts) parts.push(`${cuts} feet-off move${cuts > 1 ? 's' : ''}`);
       chip.hidden = !parts.length;
       chip.textContent = parts.length ? '⚠ ' + parts.join(' · ') : '';
-      set('cbNote', 'textContent', `Animation only: a ${pr.heightCm} cm figure following simple rules on placeholder wall geometry, in a flat front view. It can't tell whether the route is climbable, how hard it is, or whether it's safe.`);
+      set('cbNote', 'textContent', ST().ui.mode === 'field'
+        ? "Animation only, on placeholder wall geometry. It can't tell whether the route is climbable, how hard it is, or whether it's safe."
+        : `Animation only: a ${pr.heightCm} cm figure following simple rules on placeholder wall geometry, in a flat front view. It can't tell whether the route is climbable, how hard it is, or whether it's safe.`);
     },
 
     onKey(e) {
@@ -5444,6 +5492,10 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       check('Phone: tapping a hold shows its hole ID in the sheet', sheet.dataset.open === 'true' && sheet.textContent.includes(pos.hole.id), pos.hole.id);
       sheet.querySelector('[data-s="installed"]').click();
       check('Phone: checklist mark stored per revision', st.progress.items[fpl.id]?.state === 'installed');
+      const sBefore = v.v.s;
+      await tap(cv, fx + 8, fy + 8, 'touch'); await tap(cv, fx + 8, fy + 8, 'touch');
+      cv.dispatchEvent(new MouseEvent('dblclick', { clientX: cv.getBoundingClientRect().left + fx + 8, clientY: cv.getBoundingClientRect().top + fy + 8, bubbles: true }));
+      check('Phone: a double tap does not zoom the map', v.v.s === sBefore && getComputedStyle(document.body).touchAction === 'manipulation', `${sBefore.toFixed(3)} → ${v.v.s.toFixed(3)}`);
 
       // Phone editing: Place → tap a hole; Select → rotate, Move → tap, long-press drag, delete + undo.
       const q = sel => document.querySelector(sel);
@@ -5474,9 +5526,26 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       q('#ftUndo').click();
       check('Phone editing: delete, then undo brings the hold back', gone && !!st.placement(np.id));
       st.ui.selection = { kind: 'placement', id: np.id }; st.readOnly = true; app.renderPanels();
-      const roOk = q('#fieldTools').dataset.on === 'false' && !q('.editbar') && !q('#ftNewRoute') && sheet.dataset.open === 'true';
+      const roOk = !q('#fieldTools .seg2') && !q('#ftUndo') && !!q('#ftClimb') && !q('.editbar') && !q('#ftNewRoute') && sheet.dataset.open === 'true';
       st.readOnly = false; st.ui.selection = { kind: 'placement', id: fpl.id }; app.renderPanels();
-      check('Phone: a read-only plan shows no editing tools', roOk);
+      check('Phone: a read-only plan shows no editing tools (▶ Climb stays)', roOk);
+
+      // Phone climber: ▶ Climb on the Wall tab plays the chosen route to the finish, fits the screen, changes nothing.
+      const beforeClimbP = st.contentHash(), clp = app.climb;
+      st.ui.fieldRoute = 'route-a'; app.renderPanels();
+      q('#ftClimb').click(); await wait(250);
+      const barR = q('#climbBar')?.getBoundingClientRect();
+      const playing = clp.active && clp.routeId === 'route-a' && clp.t > 0 && sheet.dataset.open === 'false' && q('#fieldTools').dataset.on === 'false';
+      const finP = st.project.placements.find(x => x.routeIds.includes('route-a') && x.marker === 'finish');
+      clp.seek(clp.plan.total); v.draw();
+      const endP = clp.plan.frames[clp.plan.frames.length - 1].state;
+      const cbSmall = [...document.querySelectorAll('#climbBar button, #climbBar select')].filter(b => b.offsetParent && b.getBoundingClientRect().height < 43.5);
+      const fitsP = barR && barR.left >= 0 && barR.right <= window.innerWidth + 0.5 && document.documentElement.scrollWidth <= window.innerWidth + 1;
+      const tapsIgnored = (await tap(cv, fx, fy, 'touch'), sheet.dataset.open === 'false' && !st.ui.selection);
+      q('#cbClose').click();
+      check('Phone: ▶ Climb plays the route to the finish on a phone-sized bar and changes nothing', playing && endP.lh?.hold.id === finP.id && fitsP && !cbSmall.length && tapsIgnored && !clp.active && q('#fieldTools').dataset.on === 'true' && st.contentHash() === beforeClimbP,
+        `bar ${barR ? Math.round(barR.height) : '?'} px${cbSmall.length ? ' · small: ' + cbSmall.map(b => b.id).join(',') : ''}`);
+      st.ui.fieldRoute = 'all'; st.ui.selection = { kind: 'placement', id: fpl.id }; app.renderPanels();
 
       const buttons = [...document.querySelectorAll('.field-tabs button, .rchip, .statusbtns button, .navbtns button, .seg2 button, .ftools .btn, .editbar button')].filter(b => b.offsetParent);
       const small = buttons.filter(b => { const r = b.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; });
@@ -5880,6 +5949,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     $('fileBtn').addEventListener('click', e => { e.stopPropagation(); fileMenu(e.currentTarget); });
     $('shareBtn').addEventListener('click', () => RF.exporters.sendToPhoneDialog());
     document.addEventListener('keydown', onKey);
+    // iOS Safari ignores user-scalable=no: in the phone view a pinch on the sheet or bars would zoom the
+    // whole page and break the layout. The wall map keeps its own pinch zoom (pointer events).
+    for (const t of ['gesturestart', 'gesturechange']) document.addEventListener(t, e => { if (document.body.classList.contains('field')) e.preventDefault(); }, { passive: false });
     wireHud(); renderBands();
     new ResizeObserver(() => app.view.resize()).observe($('stage'));
     window.addEventListener('beforeunload', () => { if (st.saveState === 'saving') st.saveLocal(); });
