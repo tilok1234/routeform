@@ -194,6 +194,14 @@ body.field .prelim{font-size:9px;padding:2px 5px;opacity:.92}
 body.field .hud-tr{flex-direction:column;align-items:stretch;top:8px;right:6px;gap:6px}
 body.field .hud-tr .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:rgba(18,26,38,.82)}
 body.field .hud-tr [data-zoom=fit]{font-size:12px}
+#fullBtn{display:none}
+body.field #fullBtn{display:flex;align-items:center;justify-content:center}
+/* full screen: the wall takes the whole screen; keep clear of the notch and the home bar */
+body.field.fieldfull .field-top,body.field.fieldfull .field-tabs{display:none}
+body.field.fieldfull .hud-tr,body.field.fieldfull .ftools[data-on=true]{top:max(8px,env(safe-area-inset-top))}
+body.field.fieldfull .field-sheet[data-open=true]{padding-bottom:max(14px,env(safe-area-inset-bottom))}
+body.field.fieldfull .climbbar{bottom:max(6px,env(safe-area-inset-bottom))}
+body.field.fieldfull #fullBtn{border-color:var(--accent);color:var(--accent2)}
 body.field #layersBtn,body.field #bandSel{display:none}
 body.field .minimap{width:56px;height:84px;right:6px;bottom:26px}
 .ft-row{display:flex;align-items:center;gap:6px;min-width:0}
@@ -287,7 +295,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-03T17:06:29.869Z">
+<meta name="routeform-build" content="2026-11-03T17:10:16.135Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -4761,11 +4769,31 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   const MIN_PLACE_S = 0.09;    // below this zoom (≈18 px per 200 mm) a tap zooms in instead of placing
   const editable = () => !ST().readOnly;
   const climbing = () => !!A().climb?.active;
+  // Corner-arrow icons for the full-screen button (expand / back to normal).
+  const FULL_ICON = d => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+  const ICON_EXPAND = FULL_ICON('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'), ICON_SHRINK = FULL_ICON('M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5');
 
   const mode = {
-    target: null, msg: '', flashTimer: 0,
-    mount() { ST().ui.fieldTool = 'select'; this.target = null; this.msg = ''; renderTabs(); },
-    unmount() { $('fieldSheet').dataset.open = 'false'; $('fieldPage').dataset.open = 'false'; $('fieldTools').dataset.on = 'false'; this.target = null; A().dragState = null; },
+    target: null, msg: '', flashTimer: 0, full: false,
+    mount() { ST().ui.fieldTool = 'select'; this.target = null; this.msg = ''; this.setFull(false); renderTabs(); },
+    unmount() { $('fieldSheet').dataset.open = 'false'; $('fieldPage').dataset.open = 'false'; $('fieldTools').dataset.on = 'false'; this.target = null; A().dragState = null; this.setFull(false); },
+    /* Full screen: hide the route chips and the tabs so the wall gets the whole screen. The tools,
+     * zoom buttons, hold card and place bar stay. Not remembered across visits, so the menus are
+     * always there when the app opens. */
+    setFull(on) {
+      this.full = !!on;
+      document.body.classList.toggle('fieldfull', this.full);
+      const b = $('fullBtn');
+      if (b) {
+        b.innerHTML = this.full ? ICON_SHRINK : ICON_EXPAND;
+        b.setAttribute('aria-pressed', String(this.full));
+        b.setAttribute('aria-label', this.full ? 'Show the route chips and tabs again' : 'Full screen: hide the route chips and tabs');
+      }
+    },
+    toggleFull() {
+      if (!this.full) { ST().ui.fieldTab = 'map'; renderTabs(); renderPage(); renderTools(); renderSheet(); }
+      this.setFull(!this.full);
+    },
     renderPanels() { renderTop(); renderTabs(); renderTools(); renderSheet(); renderPage(); },
     onTap(px, py) {
       if (climbing()) return;   // the map only pans and zooms while the climber plays
@@ -5817,6 +5845,14 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         `bar ${barR ? Math.round(barR.height) : '?'} px${cbSmall.length ? ' · small: ' + cbSmall.map(b => b.id).join(',') : ''}`);
       st.ui.fieldRoute = 'all'; st.ui.selection = { kind: 'placement', id: fpl.id }; app.renderPanels();
 
+      // Full screen: the route chips and tabs go away and the wall gets their space; the same button brings them back.
+      const stageH0 = q('#stage').getBoundingClientRect().height;
+      q('#fullBtn').click(); await wait(80);
+      const fullOk = !q('#fieldTop').offsetParent && !q('#fieldTabs').offsetParent && q('#stage').getBoundingClientRect().height > stageH0 + 40 && q('#fullBtn').getAttribute('aria-pressed') === 'true';
+      const stageH1 = q('#stage').getBoundingClientRect().height;
+      q('#fullBtn').click(); await wait(80);
+      check('Phone: full screen hides the route chips and tabs, and the same button brings them back', fullOk && !!q('#fieldTop').offsetParent && !!q('#fieldTabs').offsetParent && Math.abs(q('#stage').getBoundingClientRect().height - stageH0) < 1, `map ${Math.round(stageH0)} → ${Math.round(stageH1)} px`);
+
       const buttons = [...document.querySelectorAll('.field-tabs button, .rchip, .statusbtns button, .navbtns button, .seg2 button, .ftools .btn, .editbar button')].filter(b => b.offsetParent);
       const small = buttons.filter(b => { const r = b.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; });
       check('Phone: primary touch targets ≥ 44 px', !small.length, small.map(b => b.textContent.trim().slice(0, 12)).join(', '));
@@ -5920,6 +5956,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <button class="btn icon" data-zoom="in" aria-label="Zoom in">+</button>
       <button class="btn icon" data-zoom="out" aria-label="Zoom out">−</button>
       <button class="btn" data-zoom="fit" aria-label="Fit sector">Fit</button>
+      <button class="btn icon" id="fullBtn" aria-pressed="false" aria-label="Full screen: hide the route chips and tabs"></button>
       <select id="bandSel" aria-label="Jump to height band"></select>
       <button class="btn" id="layersBtn" aria-haspopup="true">Layers</button>
     </div>
@@ -6051,6 +6088,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     $('layersPop').innerHTML = '<h2>Layers</h2>' + items.map(([k, t]) => `<label class="check"><input type="checkbox" data-layer="${k}" ${L[k] ? 'checked' : ''}> ${t}</label>`).join('');
   }
   function wireHud() {
+    $('fullBtn').addEventListener('click', () => RF.modes.field?.toggleFull());
     document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
       const z = b.dataset.zoom;
       if (z === 'in') app.view.zoomBy(1.5); else if (z === 'out') app.view.zoomBy(1 / 1.5); else app.view.fitSector();
