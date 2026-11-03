@@ -103,6 +103,8 @@ body.field .cb-opts label{flex:none;font-size:13px;white-space:nowrap}
 body.field .cb-opts select{min-height:44px}
 body.field .cb-opts .chip{order:-1;flex:none;margin-left:0;min-height:44px}
 body.field .stage.climbing .hud-tl,body.field .stage.climbing .minimap{display:none}
+/* phone: the wall map gets the space; the ⚠ button in the top row carries the calibration warning */
+body.field .hud-tl,body.field .minimap{display:none}
 .popover{position:absolute;top:48px;right:8px;z-index:20;background:#172231;border:1px solid #3b4a60;border-radius:10px;padding:10px;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .check{display:flex;align-items:center;gap:8px;font-size:12px;color:#d1deee;padding:4px 0;cursor:pointer}
 .check input{accent-color:var(--accent);width:16px;height:16px}
@@ -186,7 +188,7 @@ table.mini input{width:70px;border:1px solid #384a61;background:#0e1725;border-r
 body.field .topbar,body.field .side,body.field .ribbon,body.field .hud-bl,body.field .hud-tl .readout{display:none}
 body.field .workspace{grid-template-columns:minmax(0,1fr)}
 body.field .field-top{display:block;background:#0f1622;border-bottom:1px solid var(--line);padding:6px 8px 6px;padding-top:max(6px,env(safe-area-inset-top))}
-body.field .field-tabs{display:grid;grid-template-columns:repeat(4,1fr);background:#0f1622;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+body.field .field-tabs{display:grid;grid-template-columns:repeat(3,1fr);background:#0f1622;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 body.field .hud-tl{left:38px;top:auto;bottom:24px}
 body.field .prelim{font-size:9px;padding:2px 5px;opacity:.92}
 body.field .hud-tr{flex-direction:column;align-items:stretch;top:8px;right:6px;gap:6px}
@@ -195,8 +197,10 @@ body.field .hud-tr [data-zoom=fit]{font-size:12px}
 body.field #layersBtn,body.field #bandSel{display:none}
 body.field .minimap{width:56px;height:84px;right:6px;bottom:26px}
 .ft-row{display:flex;align-items:center;gap:6px;min-width:0}
-.ft-title{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-.ft-warn{border:1px solid #c26a3c;background:#7a2e14;color:#ffe5d2;font-weight:800;font-size:11px;border-radius:8px;padding:0 10px;min-height:36px;letter-spacing:.04em}
+.ft-row .chips{flex:1;min-width:0}
+.ft-btn{flex:none;width:44px;height:44px;border-radius:22px;border:1px solid #3b4a60;background:#1a2535;font-size:17px;font-weight:800;color:#e6edf5;padding:0}
+.ft-btn.ft-climb{border-color:#c98a4a;color:#ffd9b0}
+.ft-warn{border-color:#c26a3c;background:#7a2e14;color:#ffe5d2}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:6px 0 2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .rchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 13px;border-radius:22px;border:1px solid #3b4a60;background:#1a2535;font-weight:700;font-size:13px;white-space:nowrap}
@@ -220,6 +224,17 @@ body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z
 .statusbtns button.on[data-s=pending]{background:#2a3a52;border-color:#7d93b1}
 .navbtns{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:6px}
 .navbtns button{min-height:50px;border-radius:10px;font-weight:700;font-size:14px}
+/* compact hold card: one line of position, one row of actions, the rest behind Details */
+.sh-line{margin:8px 0;font-size:14px;line-height:1.4}
+.sh-nav{grid-template-columns:44px 1.2fr 1fr 44px;margin-top:2px}
+.sh-nav button{min-height:44px;padding:0 4px}
+.sh-nav .st-installed{background:#1f6b45;border-color:#57c38b}
+.sh-nav .st-needs_fix{background:#7a3410;border-color:#ff9a5c}
+.sh-details{margin-top:10px;border-top:1px solid #2c3a4d;padding-top:6px}
+.progfile{margin-top:12px}
+.progfile summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer;color:#c3d2e4}
+.pb-deg{flex:none;min-width:34px;text-align:center;font-weight:700}
+#pbMsg:empty{display:none}
 .rotglyph{display:inline-flex;width:44px;height:44px;border-radius:50%;border:2px solid #7d93b1;align-items:center;justify-content:center;font-size:22px;flex:0 0 44px}
 .list{display:grid;gap:6px}
 .li{display:flex;align-items:center;gap:10px;min-height:56px;padding:6px 10px;border-radius:10px;border:1px solid #2f4056;background:#162131;text-align:left;width:100%}
@@ -239,7 +254,6 @@ body.field .ftools>*{pointer-events:auto}
 .seg2 button{min-height:44px;min-width:68px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:13px;color:#c3d2e4;padding:0 8px}
 .seg2 button.on{background:#e9eef5;color:#111}
 body.field .ftools .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:rgba(18,26,38,.82)}
-body.field .ftools .btn.ft-climb{width:auto;padding:0 14px;font-size:14px;font-weight:700;border-color:#c98a4a;color:#ffd9b0}
 .editbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 2px}
 .editbar button,.nudge button{min-height:50px;border-radius:10px;border:1px solid #3b4a60;background:#1b2636;font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
 .editbar button b{font-size:18px;line-height:1}
@@ -273,7 +287,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-02T20:59:56.887Z">
+<meta name="routeform-build" content="2026-11-03T17:06:29.869Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -2413,7 +2427,7 @@ globalThis.RF_ASSETS = { photos: {} };
         ctx.restore();
         const [la, ly] = this.toScreen(sx0, 0);
         ctx.font = '600 11px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,214,140,.95)'; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
-        ctx.fillText(`SECTOR · ${(p.sector.width.value / 1000).toFixed(2)} m wide · ${RF.schema.CONF[p.sector.width.confidence].label.toUpperCase()}`, la + 4, ly + 8);
+        if (this.app.store.ui.mode !== 'field') ctx.fillText(`SECTOR · ${(p.sector.width.value / 1000).toFixed(2)} m wide · ${RF.schema.CONF[p.sector.width.confidence].label.toUpperCase()}`, la + 4, ly + 8);
       }
 
       // Mode overlays (selection, hover targets, ghost grid, registration points...).
@@ -2549,7 +2563,7 @@ globalThis.RF_ASSETS = { photos: {} };
 
     drawHoldBadges(list, s, field) {
       const ctx = this.ctx, st = this.app.store, ui = st.ui, prog = st.progressItems();
-      const showLabels = ui.layers.labels && s > 0.3;
+      const showLabels = ui.layers.labels && s > 0.3 && ui.mode !== 'field';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       for (const d of list) {
         const { pl, cat } = d;
@@ -2618,7 +2632,7 @@ globalThis.RF_ASSETS = { photos: {} };
           ctx.fillStyle = '#3a3f46'; ctx.fillRect(x - wd / 2, y, wd, len);
           if (s > 0.06) { ctx.strokeStyle = '#c4c9cf'; ctx.lineWidth = Math.max(1, 7 * s); ctx.beginPath(); ctx.ellipse(x, y + len + 30 * s, 22 * s, 42 * s, 0, 0, Math.PI * 2); ctx.stroke(); }
           // Quickdraw names when zoomed in: holds without a mounting hole are described from them ("near L3·5").
-          if (L.labels && s > 0.15) {
+          if (L.labels && s > 0.15 && (this.app.store.ui.mode !== 'field' || !this.app.store.index.count)) {   // phone: only where there is no hole map
             ctx.font = '600 10px system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
             const tw = ctx.measureText(f.label).width + 6, ly = y + len * 0.4;
             ctx.fillStyle = 'rgba(20,24,30,.7)'; ctx.fillRect(x - wd - 4 - tw, ly - 7, tw, 14);
@@ -2640,7 +2654,8 @@ globalThis.RF_ASSETS = { photos: {} };
       const ctx = this.ctx, WH = p.wall.height.value, x0 = p.sector.x0.value;
       const step = s > 0.25 ? 250 : s > 0.09 ? 500 : 1000;
       ctx.save();
-      ctx.fillStyle = 'rgba(14,18,25,.78)'; ctx.fillRect(0, 0, 34, this.h); ctx.fillRect(0, this.h - 20, this.w, 20);
+      const bottom = this.app.store.ui.mode !== 'field';   // phone: height ruler only
+      ctx.fillStyle = 'rgba(14,18,25,.78)'; ctx.fillRect(0, 0, 34, this.h); if (bottom) ctx.fillRect(0, this.h - 20, this.w, 20);
       ctx.font = '10px system-ui, sans-serif'; ctx.fillStyle = '#b7c4d4'; ctx.strokeStyle = '#6f7f93'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
       const [, ytop] = this.toWall(0, 0), [, ybot] = this.toWall(0, this.h);
       for (let y = Math.max(0, Math.floor(ybot / step) * step); y <= Math.min(WH, ytop); y += step) {
@@ -2650,6 +2665,7 @@ globalThis.RF_ASSETS = { photos: {} };
         if (major || step < 1000) ctx.fillText(major ? (y / 1000) + ' m' : (y / 1000).toFixed(step < 500 ? 2 : 1), 23, sy);
       }
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (!bottom) { ctx.restore(); return; }
       const [xl] = this.toWall(34, 0), [xr] = this.toWall(this.w, 0), hstep = step * (s < 0.03 ? 2 : 1);
       for (let x = Math.ceil((xl - x0) / hstep) * hstep; x + x0 <= xr; x += hstep) {
         const [sx] = this.toScreen(x + x0, 0);
@@ -3542,6 +3558,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     ctx.beginPath(); ctx.moveTo(sx - 12, sy); ctx.lineTo(sx - 4, sy); ctx.moveTo(sx + 4, sy); ctx.lineTo(sx + 12, sy);
     ctx.moveTo(sx, sy - 12); ctx.lineTo(sx, sy - 4); ctx.moveTo(sx, sy + 4); ctx.lineTo(sx, sy + 12); ctx.stroke();
     ctx.beginPath(); ctx.arc(sx, sy, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#ffe14d'; ctx.fill();
+    if (store.ui.mode === 'field') { ctx.restore(); return; }   // phone: the ring is enough; details are on the card
     const ref = pos.ok && !pos.hole && pl.attachment === 'bolt_on' ? W.nearestReference(store.project, pos.x, pos.y) : null;
     const text = (pos.ok ? (pos.hole ? pos.hole.id : ref ? 'near ' + ref.fixture.label : 'screw-on ' + pos.panel.id) : 'DETACHED') + ' · ' + pl.label;
     ctx.font = '700 12px ui-monospace, Consolas, monospace';
@@ -3732,6 +3749,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const [x, y] = view.toScreen(t.hole.x, t.hole.y);
       ctx.lineWidth = 3; ctx.strokeStyle = t.blocked ? '#ff4d4d' : '#38d27a';
       ctx.beginPath(); ctx.arc(x, y, Math.max(9, 22 * view.v.s), 0, Math.PI * 2); ctx.stroke();
+      if (ST().ui.mode === 'field') { ctx.restore(); return; }   // phone: ring only, no text on the wall
       ctx.font = '700 11px ui-monospace, Consolas, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
       const label = t.blocked ? `${t.hole.id} · occupied by ${t.blocked}` : t.hole.id;
       const tw = ctx.measureText(label).width + 10;
@@ -3741,7 +3759,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const [x, y] = view.toScreen(t.x, t.y);
       ctx.strokeStyle = t.blocked ? '#ff4d4d' : '#f5c542'; ctx.setLineDash([4, 3]); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      if (t.planned) {
+      if (t.planned && ST().ui.mode !== 'field') {
         const label = t.blocked ? `too close to ${t.blocked}` : UI.referenceText(t.ref, true);
         ctx.font = '700 11px system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
         const tw = ctx.measureText(label).width + 10;
@@ -4878,7 +4896,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 
   // ---- top bar + tabs ----------------------------------------------------------------------
   function renderTop() {
-    const st = ST(), p = st.project, ui = st.ui, r = p.revision, prov = W.provenance(p, st.index);
+    const st = ST(), p = st.project, ui = st.ui, prov = W.provenance(p, st.index);
     if (ui.fieldRoute !== 'all' && !st.route(ui.fieldRoute)) ui.fieldRoute = 'all';   // route deleted or undone
     const chips = [`<button class="rchip ${ui.fieldRoute === 'all' ? 'on' : ''}" data-fr="all">All routes</button>`]
       .concat(p.routes.map(rt => {
@@ -4886,10 +4904,12 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         return `<button class="rchip ${ui.fieldRoute === rt.id ? 'on' : ''}" data-fr="${U.esc(rt.id)}"><span class="sw" style="background:${rt.color}"></span>${U.esc(rt.name)}<small style="opacity:.75">${done}/${holds.length}</small></button>`;
       }));
     if (editable()) chips.push('<button class="rchip" id="ftNewRoute">＋ Route</button>');
-    const edited = r && editable() && st.hasUnpublishedChanges() ? ' · edited' : '';
-    $('fieldTop').innerHTML = `<div class="ft-row"><div class="ft-title">${U.esc(p.wall.name)} · ${U.esc(p.sector.name)}<br><small class="muted">${r ? `Revision ${r.number} · ${U.esc(r.createdAt.slice(0, 16).replace('T', ' '))}${edited}` : 'Unpublished draft'}${st.readOnly ? ' · read-only copy' : ''}</small></div>
-      <button class="ft-warn" id="ftWarn" aria-label="Calibration status">${prov.allVerified ? 'VERIFIED ✓' : '⚠ UNCALIBRATED'}</button></div>
-      <div class="chips" role="group" aria-label="Filter routes">${chips.join('')}</div>`;
+    // Wall name, revision and edit state live on the More tab; this row keeps only what you use while working.
+    const climb = !p.routes.length ? '' : climbing()
+      ? '<button class="ft-btn" id="ftClimb" aria-label="Stop the climber">■</button>'
+      : `<button class="ft-btn ft-climb" id="ftClimb" aria-label="Watch a climber try ${U.esc(st.route(climbRoute())?.name || 'the route')}">▶</button>`;
+    $('fieldTop').innerHTML = `<div class="ft-row"><div class="chips" role="group" aria-label="Filter routes">${chips.join('')}</div>${climb}
+      <button class="ft-btn ft-warn" id="ftWarn" aria-label="${prov.allVerified ? 'Verified wall geometry' : 'Wall geometry uncalibrated: what is verified?'}">${prov.allVerified ? '✓' : '⚠'}</button></div>`;
     $('fieldTop').querySelectorAll('[data-fr]').forEach(b => b.addEventListener('click', () => {
       ui.fieldRoute = b.dataset.fr;
       if (ui.fieldRoute !== 'all') ui.activeRouteId = ui.fieldRoute;   // new holds go to the route you're looking at
@@ -4900,12 +4920,14 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       if (climbing()) { if (ui.fieldRoute === 'all') A().climb.close(); else A().climb.open(ui.fieldRoute); }   // watch the route you picked
     }));
     $('ftNewRoute')?.addEventListener('click', newRoute);
+    $('ftClimb')?.addEventListener('click', () => (climbing() ? A().climb.close() : A().climb.open(climbRoute())));
     $('ftWarn').addEventListener('click', calibrationInfo);
     $('fieldTop').querySelector('.rchip.on')?.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
   function renderTabs() {
+    if (ST().ui.fieldTab === 'check') ST().ui.fieldTab = 'list';   // the checklist is part of the Holds list now
     const t = ST().ui.fieldTab || 'map';
-    const tabs = [['map', '▦', 'Wall'], ['list', '☰', 'Holds'], ['check', '✓', 'Checklist'], ['more', '⋯', 'More']];
+    const tabs = [['map', '▦', 'Wall'], ['list', '✓', 'Holds'], ['more', '⋯', 'More']];
     $('fieldTabs').innerHTML = tabs.map(([k, i, l]) => `<button data-ft="${k}" class="${t === k ? 'on' : ''}" aria-pressed="${t === k}"><b>${i}</b>${l}</button>`).join('');
     $('fieldTabs').querySelectorAll('[data-ft]').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.ft !== 'map') A().climb?.close();
@@ -4913,23 +4935,21 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     }));
   }
 
-  // ---- Wall tab tools (Select / Place, undo, redo; ▶ Climb also in read-only copies) ----------
+  // ---- Wall tab tools (Select / Place, undo, redo) ----------------------------------------------
   function renderTools() {
-    const st = ST(), el = $('fieldTools'), placing = st.ui.fieldTool === 'place', edit = editable(), canClimb = st.project.routes.length > 0;
-    const on = (st.ui.fieldTab || 'map') === 'map' && !climbing() && (edit || canClimb);
+    const st = ST(), el = $('fieldTools'), placing = st.ui.fieldTool === 'place';
+    const on = (st.ui.fieldTab || 'map') === 'map' && !climbing() && editable();
     el.dataset.on = String(on);
     if (!on) { el.innerHTML = ''; return; }
     const last = a => (a.length ? ': ' + a[a.length - 1].label : '');
-    el.innerHTML = (edit ? `<div class="seg2" role="group" aria-label="Tool">
+    el.innerHTML = `<div class="seg2" role="group" aria-label="Tool">
         <button data-ftool="select" class="${placing ? '' : 'on'}" aria-pressed="${!placing}">ⓘ Select</button>
         <button data-ftool="place" class="${placing ? 'on' : ''}" aria-pressed="${placing}">＋ Place</button></div>
       <button class="btn icon" id="ftUndo" aria-label="Undo${U.esc(last(st.undoStack))}" ${st.undoStack.length ? '' : 'disabled'}>↶</button>
-      <button class="btn icon" id="ftRedo" aria-label="Redo${U.esc(last(st.redoStack))}" ${st.redoStack.length ? '' : 'disabled'}>↷</button>` : '')
-      + (canClimb ? `<button class="btn ft-climb" id="ftClimb" aria-label="Watch a climber try ${U.esc(st.route(climbRoute())?.name || 'the route')}">▶ Climb</button>` : '');
+      <button class="btn icon" id="ftRedo" aria-label="Redo${U.esc(last(st.redoStack))}" ${st.redoStack.length ? '' : 'disabled'}>↷</button>`;
     el.querySelectorAll('[data-ftool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.ftool)));
-    $('ftUndo')?.addEventListener('click', () => st.undo());
-    $('ftRedo')?.addEventListener('click', () => st.redo());
-    $('ftClimb')?.addEventListener('click', () => A().climb.open(climbRoute()));
+    $('ftUndo').addEventListener('click', () => st.undo());
+    $('ftRedo').addEventListener('click', () => st.redo());
   }
   // The route chip you picked; on "All routes", the selected hold's route or the one you last worked on.
   function climbRoute() {
@@ -4973,7 +4993,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const m = UI.describeMount(st, pl), cat = st.catalogItem(pl.catalogId), seq = sequence(), i = seq.findIndex(x => x.id === pl.id);
     const prog = st.progress?.items?.[pl.id] || { state: 'pending', note: '' };
     const routes = pl.routeIds.map(id => st.route(id)).filter(Boolean);
-    const photos = photosShowing(m);
+    const photos = photosShowing(m), details = !!st.ui.fieldDetails, s = STATES[prog.state] || STATES.pending;
     el.dataset.open = 'true';
     el.innerHTML = `<div class="sheet-grab"></div>
       <div class="sheet-head"><span class="sw" style="background:${colourOf(pl)}"></span><div style="flex:1;min-width:0"><b style="font-size:18px">${U.esc(pl.label)}</b> <span class="muted">${U.esc(cat?.name || 'Hold')}${pl.marker ? ' · ' + (pl.marker === 'start' ? 'START' : 'FINISH') : ''}</span><br>${routes.map(r => `<span class="chip" style="border-color:${r.color}">${U.esc(r.name)}</span>`).join(' ')}</div>
@@ -4981,16 +5001,22 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       ${editable() ? `<div class="editbar" role="group" aria-label="Edit this hold">
         <button data-ed="rotl" aria-label="Rotate 15° anticlockwise"><b>↺</b>15°</button><button data-ed="rotr" aria-label="Rotate 15° clockwise"><b>↻</b>15°</button>
         <button data-ed="move"><b>✥</b>Move</button><button data-ed="edit"><b>✎</b>Edit</button><button data-ed="del" class="danger"><b>✕</b>Delete</button></div>` : ''}
-      ${m.ok ? `<div class="bighole" aria-label="Mounting hole">${U.esc(m.code)}</div>
-        <div class="count">${U.esc(m.panelText)}<br><b>${U.esc(m.countText)}</b><br>${U.esc(m.offsetText)}<br>${U.esc(m.heightText)}</div>
-        <p style="margin-top:6px">${UI.badge(m.conf)} <small class="muted">${S.CONF[m.conf]?.rank >= 3 ? 'Field-verified hole position.' : 'Estimated position — confirm on the wall before relying on it.'}</small></p>`
+      ${m.ok ? `<p class="sh-line"><b class="mono">${U.esc(m.code)}</b> · ${(m.y / 1000).toFixed(2)} m · ${pl.rotation}° (${U.esc(U.clock(pl.rotation))})${S.CONF[m.conf]?.rank >= 3 ? '' : ' · <span class="muted">estimated</span>'}</p>`
         : `<div class="callout bad">This hold has no valid mounting reference (${U.esc(m.reason)}). Ask the setter to re-attach it in the editor.</div>`}
-      <div class="row" style="margin:8px 0;gap:10px">${UI.rotGlyph(pl.rotation)}<div><b>Rotation</b><br>${U.esc(UI.rotationText(pl, m))}</div></div>
-      <dl class="kv"><dt>Use</dt><dd>${{ both: 'Hands + feet', hands: 'Hands', feet: 'Feet only' }[pl.role]}</dd><dt>Size</dt><dd>${cat ? `${cat.sizeMm.w}×${cat.sizeMm.h} mm ${UI.badge(cat.sizeConfidence)}` : '—'}</dd>${cat?.brand ? `<dt>Model</dt><dd>${U.esc(cat.brand)} ${U.esc(cat.inventoryId)}</dd>` : ''}${pl.notes ? `<dt>Notes</dt><dd>${U.esc(pl.notes)}</dd>` : ''}</dl>
-      <div class="statusbtns" role="group" aria-label="Checklist status">${Object.entries(STATES).map(([k, v]) => `<button data-s="${k}" class="${prog.state === k ? 'on' : ''}" aria-pressed="${prog.state === k}">${v.icon} ${v.label}</button>`).join('')}</div>
-      <div class="field"><label for="shNote">On-wall note / deviation</label><input id="shNote" value="${U.esc(prog.note || '')}" placeholder="e.g. used hole one to the right" style="min-height:44px;font-size:16px"></div>
-      <div class="navbtns"><button class="btn" id="shPrev">◀ Prev</button><button class="btn" id="shShow">${photos.length ? 'Wall · Photo' : 'Show on wall'}</button><button class="btn" id="shNext">Next ▶</button></div>
-      <p class="hint" style="text-align:center">${i + 1} of ${seq.length} · ordered ${st.ui.fieldSort === 'down' ? 'top → bottom' : 'bottom → top'}. Checklist = workflow progress, not a safety inspection.</p>`;
+      <div class="navbtns sh-nav"><button class="btn" id="shPrev" aria-label="Previous hold">◀</button>
+        <button class="btn st-${prog.state}" id="shState" aria-label="Checklist: ${s.label}. Tap to change.">${s.icon} ${s.label}</button>
+        <button class="btn" id="shMore" aria-expanded="${details}">${details ? 'Less ▴' : 'Details ▾'}</button>
+        <button class="btn" id="shNext" aria-label="Next hold">▶</button></div>
+      ${details ? `<div class="sh-details">
+        ${m.ok ? `<div class="bighole" aria-label="Mounting hole">${U.esc(m.code)}</div>
+          <div class="count">${U.esc(m.panelText)}<br><b>${U.esc(m.countText)}</b><br>${U.esc(m.offsetText)}<br>${U.esc(m.heightText)}</div>
+          <p style="margin-top:6px">${UI.badge(m.conf)} <small class="muted">${S.CONF[m.conf]?.rank >= 3 ? 'Field-verified hole position.' : 'Estimated position — confirm on the wall before relying on it.'}</small></p>` : ''}
+        <div class="row" style="margin:8px 0;gap:10px">${UI.rotGlyph(pl.rotation)}<div><b>Rotation</b><br>${U.esc(UI.rotationText(pl, m))}</div></div>
+        <dl class="kv"><dt>Use</dt><dd>${{ both: 'Hands + feet', hands: 'Hands', feet: 'Feet only' }[pl.role]}</dd><dt>Size</dt><dd>${cat ? `${cat.sizeMm.w}×${cat.sizeMm.h} mm ${UI.badge(cat.sizeConfidence)}` : '—'}</dd>${cat?.brand ? `<dt>Model</dt><dd>${U.esc(cat.brand)} ${U.esc(cat.inventoryId)}</dd>` : ''}${pl.notes ? `<dt>Notes</dt><dd>${U.esc(pl.notes)}</dd>` : ''}</dl>
+        <div class="statusbtns" role="group" aria-label="Checklist status">${Object.entries(STATES).map(([k, v]) => `<button data-s="${k}" class="${prog.state === k ? 'on' : ''}" aria-pressed="${prog.state === k}">${v.icon} ${v.label}</button>`).join('')}</div>
+        <div class="field"><label for="shNote">On-wall note / deviation</label><input id="shNote" value="${U.esc(prog.note || '')}" placeholder="e.g. used hole one to the right" style="min-height:44px;font-size:16px"></div>
+        <button class="btn bigbtn" id="shShow">${photos.length ? 'Compare with photo' : 'Zoom to this hold'}</button>
+        <p class="hint" style="text-align:center">${i + 1} of ${seq.length} · ordered ${st.ui.fieldSort === 'down' ? 'top → bottom' : 'bottom → top'}. Checklist = workflow progress, not a safety inspection.</p></div>` : ''}`;
     el.querySelector('#shClose').addEventListener('click', () => { st.ui.selection = null; renderSheet(); A().requestDraw(); });
     el.querySelectorAll('[data-ed]').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.ed, cur = st.placement(pl.id);
@@ -5001,33 +5027,37 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       else if (a === 'del') RE().removeHold(cur);
     }));
     el.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => st.setProgress(pl.id, b.dataset.s)));
-    el.querySelector('#shNote').addEventListener('change', e => st.setProgress(pl.id, stateOf(pl) === 'pending' && e.target.value ? 'needs_fix' : stateOf(pl), e.target.value));
+    // One button steps through the checklist states: Pending → Installed → Needs fix → Pending.
+    el.querySelector('#shState').addEventListener('click', () => { const k = Object.keys(STATES); st.setProgress(pl.id, k[(k.indexOf(prog.state) + 1) % k.length]); });
+    el.querySelector('#shMore').addEventListener('click', () => { st.ui.fieldDetails = !details; st.saveUi(); renderSheet(); });
+    el.querySelector('#shNote')?.addEventListener('change', e => st.setProgress(pl.id, stateOf(pl) === 'pending' && e.target.value ? 'needs_fix' : stateOf(pl), e.target.value));
     el.querySelector('#shPrev').addEventListener('click', () => step(-1));
     el.querySelector('#shNext').addEventListener('click', () => step(1));
-    el.querySelector('#shShow').addEventListener('click', () => { if (photos.length) photoCompare(pl, m, photos); else focusHold(pl, 0.5); });
+    el.querySelector('#shShow')?.addEventListener('click', () => { if (photos.length) photoCompare(pl, m, photos); else focusHold(pl, 0.5); });
   }
 
   // Place tool: which route, which hold, which rotation; then tap holes on the wall.
   function placeSheet(el) {
     const st = ST(), p = st.project, ui = st.ui, route = p.routes.length ? st.activeRoute() : null, cat = st.catalogItem(ui.catalogId);
     const kit = p.catalog.map(c => `<button data-cat="${U.esc(c.id)}" class="${c.id === ui.catalogId ? 'on' : ''}" aria-pressed="${c.id === ui.catalogId}">${C.svgFor(c, route?.color || '#c9a06a', 30)}<span>${U.esc(c.name)}</span></button>`).join('');
-    const hint = route ? `Tap ${st.index.count ? 'a hole' : 'the spot'} on the wall to add ${cat ? 'a ' + cat.name.toLowerCase() : 'the hold'} to ${route.name}.${st.index.count ? '' : ' This wall has no hole map: the phone describes each hold from the nearest quickdraw.'}` : 'Make a route first.';
     el.dataset.open = 'true';
     el.innerHTML = `<div class="sheet-grab"></div>
-      <div class="pb-row">${route ? `<span class="sw" style="background:${route.color}"></span>
-        <select id="pbRoute" aria-label="Route the new holds go to">${p.routes.map(r => `<option value="${U.esc(r.id)}" ${r.id === route.id ? 'selected' : ''}>${U.esc(r.name)} · ${st.holdsOf(r.id).length} holds</option>`).join('')}<option value="__new">＋ New route…</option></select>
-        <button class="btn icon" id="pbEdit" aria-label="Edit route ${U.esc(route.name)}">✎</button>` : '<button class="btn primary bigbtn" id="pbNew" style="margin:0">＋ New route</button>'}</div>
-      <div class="pb-kit" role="group" aria-label="Hold to place">${kit}</div>
-      <div class="pb-row"><button class="btn icon" data-prot="-15" aria-label="Turn new holds 15° anticlockwise">↺</button>
-        <span class="pb-rot">${UI.rotGlyph(ui.placeRotation)}<span>${ui.placeRotation}° · ${U.clock(ui.placeRotation)}</span></span>
+      ${route ? `<div class="pb-row"><span class="sw" style="background:${route.color}"></span>
+        <select id="pbRoute" aria-label="Route the new holds go to">${p.routes.map(r => `<option value="${U.esc(r.id)}" ${r.id === route.id ? 'selected' : ''}>${U.esc(r.name)} · ${st.holdsOf(r.id).length}</option>`).join('')}<option value="__edit">✎ Edit this route…</option><option value="__new">＋ New route…</option></select>
+        <button class="btn icon" data-prot="-15" aria-label="Turn new holds 15° anticlockwise">↺</button>
+        <span class="pb-deg" aria-label="New holds turned ${ui.placeRotation}°">${ui.placeRotation}°</span>
         <button class="btn icon" data-prot="15" aria-label="Turn new holds 15° clockwise">↻</button></div>
-      <p class="hint" id="pbMsg" aria-live="polite">${U.esc(mode.msg || hint)}</p>`;
-    el.querySelector('#pbRoute')?.addEventListener('change', e => (e.target.value === '__new' ? newRoute() : useRoute(e.target.value)));
-    el.querySelector('#pbEdit')?.addEventListener('click', () => routeDialog(st.activeRoute()));
+      <div class="pb-kit" role="group" aria-label="Hold to place">${kit}</div>` : '<button class="btn primary bigbtn" id="pbNew" style="margin:0">＋ New route</button><p class="hint">Make a route first, then tap the wall to place holds on it.</p>'}
+      <p class="hint" id="pbMsg" aria-live="polite">${U.esc(mode.msg)}</p>`;
+    el.querySelector('#pbRoute')?.addEventListener('change', e => {
+      if (e.target.value === '__new') newRoute();
+      else if (e.target.value === '__edit') { e.target.value = st.activeRoute().id; routeDialog(st.activeRoute()); }
+      else useRoute(e.target.value);
+    });
     el.querySelector('#pbNew')?.addEventListener('click', newRoute);
     el.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { ui.catalogId = b.dataset.cat; mode.msg = ''; renderSheet(); }));
     el.querySelectorAll('[data-prot]').forEach(b => b.addEventListener('click', () => { ui.placeRotation = U.normDeg(ui.placeRotation + +b.dataset.prot); renderSheet(); }));
-    const strip = el.querySelector('.pb-kit'), on = strip.querySelector('.on');
+    const strip = el.querySelector('.pb-kit'), on = strip?.querySelector('.on');
     if (on) strip.scrollLeft = on.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2;
   }
   // Move (from a selected hold's Edit bar): tap the new hole, or step one hole at a time.
@@ -5156,7 +5186,6 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     if (t === 'map') { el.dataset.open = 'false'; el.innerHTML = ''; return; }
     el.dataset.open = 'true';
     if (t === 'list') el.innerHTML = listPage();
-    else if (t === 'check') el.innerHTML = checkPage();
     else el.innerHTML = morePage();
     wirePage(t);
   }
@@ -5166,40 +5195,33 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <span>${m.ok ? (m.y / 1000).toFixed(2) + ' m' : 'unresolved'} · ${U.esc(cat?.name || '')}${pl.marker ? ' · ' + pl.marker.toUpperCase() : ''} · ${U.clock(pl.rotation)}</span></span>
       <span class="st" style="color:${s === 'installed' ? 'var(--ok)' : s === 'needs_fix' ? 'var(--warn)' : 'var(--muted)'}" aria-label="${STATES[s].label}">${STATES[s].icon}</span></button>`;
   }
+  // Holds and the installation checklist in one list: progress for the chosen route chip, a state
+  // filter, find, and the progress-file actions folded away at the bottom.
   function listPage() {
-    const st = ST(), seq = sequence(), f = st.ui.fieldRoute;
-    return `<div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">${f === 'all' ? 'All routes' : U.esc(st.route(f)?.name)} · ${seq.length} holds</h2>
+    const st = ST(), p = st.project, f = st.ui.fieldRoute, cf = st.ui.checkFilter || 'all', prog = st.progress;
+    const all = sequence(), seq = all.filter(pl => cf === 'all' || stateOf(pl) === cf);
+    const done = all.filter(h => stateOf(h) === 'installed').length, fix = all.filter(h => stateOf(h) === 'needs_fix').length, pct = all.length ? Math.round(done / all.length * 100) : 0;
+    return `<div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">${f === 'all' ? 'All routes' : U.esc(st.route(f)?.name)} · ${all.length} holds</h2>
       <button class="btn" id="sortBtn" style="min-height:44px">${st.ui.fieldSort === 'down' ? 'Top → bottom' : 'Bottom → top'} ⇅</button></div>
+      <div class="row" style="justify-content:space-between;font-size:12px"><span>${done} of ${all.length} installed · ${pct}%${fix ? ` · <span style="color:var(--warn)">${fix} need fix</span>` : ''}</span></div>
+      <div class="bar" style="margin:4px 0 8px"><i style="width:${pct}%"></i></div>
+      <div class="seg">${[['all', 'All'], ['pending', 'Pending'], ['installed', 'Installed'], ['needs_fix', 'Needs fix']].map(([k, t]) => `<button data-cf="${k}" class="${cf === k ? 'on' : ''}" style="min-height:44px">${t}</button>`).join('')}</div>
       <div class="field"><input id="findInput" placeholder="Find hold (H012), hole (C3.r05.c03) or panel (C3)" style="min-height:44px;font-size:16px" autocomplete="off"></div>
-      <div class="list">${seq.map(holdRow).join('') || '<p class="muted">No holds.</p>'}</div>`;
-  }
-  function checkPage() {
-    const st = ST(), p = st.project, f = st.ui.checkFilter || 'all';
-    const bars = p.routes.map(r => {
-      const hs = st.holdsOf(r.id), done = hs.filter(h => stateOf(h) === 'installed').length, fix = hs.filter(h => stateOf(h) === 'needs_fix').length;
-      const pct = hs.length ? Math.round(done / hs.length * 100) : 0;
-      return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><b><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${r.color}"></span> ${U.esc(r.name)}</b><span>${done}/${hs.length} · ${pct}%${fix ? ` · <span style="color:var(--warn)">${fix} need fix</span>` : ''}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
-    }).join('');
-    const seq = sequence().filter(pl => f === 'all' || stateOf(pl) === f);
-    const prog = st.progress;
-    return `<h2>Installation checklist</h2>
-      <div class="callout">Workflow progress only — ticking a hold is <b>not</b> a safety inspection or approval. Stored on this device for revision ${p.revision ? p.revision.number : '(draft)'}.</div>
-      ${bars}
-      <div class="seg">${[['all', 'All'], ['pending', 'Pending'], ['installed', 'Installed'], ['needs_fix', 'Needs fix']].map(([k, t]) => `<button data-cf="${k}" class="${f === k ? 'on' : ''}" style="min-height:44px">${t}</button>`).join('')}</div>
-      <div class="list">${seq.map(holdRow).join('') || '<p class="muted">Nothing here.</p>'}</div>
-      <div class="sep"></div>
-      <button class="btn primary bigbtn" id="expProg">Export progress file (.json)</button>
-      ${A().server ? '<button class="btn bigbtn" id="sendProg">Send progress to the desktop (Wi-Fi)</button>' : ''}
-      <button class="btn bigbtn" id="impProg">Import progress file…</button>
-      <button class="btn danger bigbtn" id="resetProg">Reset progress on this device…</button>
-      <p class="hint">Started ${U.esc(prog?.startedAt || '—')} · last change ${U.esc(prog?.updatedAt || '—')}</p>`;
+      <div class="list">${seq.map(holdRow).join('') || `<p class="muted">${all.length ? 'Nothing here.' : 'No holds.'}</p>`}</div>
+      <p class="hint">Checklist marks are workflow progress only, not a safety inspection or approval. Stored on this device for revision ${p.revision ? p.revision.number : '(draft)'}.</p>
+      <details class="progfile"><summary>Checklist progress file</summary>
+        <button class="btn primary bigbtn" id="expProg">Export progress file (.json)</button>
+        ${A().server ? '<button class="btn bigbtn" id="sendProg">Send progress to the desktop (Wi-Fi)</button>' : ''}
+        <button class="btn bigbtn" id="impProg">Import progress file…</button>
+        <button class="btn danger bigbtn" id="resetProg">Reset progress on this device…</button>
+        <p class="hint">Started ${U.esc(prog?.startedAt || '—')} · last change ${U.esc(prog?.updatedAt || '—')}</p></details>`;
   }
   function morePage() {
     const st = ST(), p = st.project, r = p.revision, prov = W.provenance(p, st.index), L = st.ui.layers;
     const H = p.wall.height.value, bands = [];
     for (let y = 0; y < H; y += 3000) bands.push(`<button class="btn" data-band="${y}" style="min-height:44px">${y / 1000}–${Math.min(H, y + 3000) / 1000} m</button>`);
     return `<h2>Plan</h2>
-      <dl class="kv"><dt>Project</dt><dd>${U.esc(p.name)}</dd><dt>Revision</dt><dd>${r ? `${r.number} (${U.esc(r.id)}) · ${U.esc(r.createdAt)}` : 'unpublished draft'}</dd>
+      <dl class="kv"><dt>Project</dt><dd>${U.esc(p.name)}${st.readOnly ? ' · read-only copy' : ''}</dd><dt>Revision</dt><dd>${r ? `${r.number} (${U.esc(r.id)}) · ${U.esc(r.createdAt)}${editable() && st.hasUnpublishedChanges() ? ' · <b>edited since</b>' : ''}` : 'unpublished draft'}</dd>
       <dt>Content</dt><dd class="mono">${U.esc(st.contentHash())}${r && r.contentHash !== st.contentHash() ? ' <span class="chip warn">differs from revision</span>' : ''}</dd>
       <dt>Wall</dt><dd>${U.esc(p.wall.name)}, ${U.esc(p.wall.facility)}</dd></dl>
       ${editable() ? `<button class="btn primary bigbtn" id="newPlan">Other walls: ${RF.seed.walls.map(w => U.esc(w.name)).join(', ')}…</button>
@@ -5237,8 +5259,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       renderTabs(); renderPage(); renderSheet(); requestAnimationFrame(() => focusHold(pl, 0.4));
     }));
     el.querySelector('#findInput')?.addEventListener('change', e => find(e.target.value));
-    if (t === 'list') el.querySelector('#sortBtn').addEventListener('click', () => { st.ui.fieldSort = st.ui.fieldSort === 'down' ? 'up' : 'down'; st.saveUi(); renderPage(); });
-    if (t === 'check') {
+    if (t === 'list') {
+      el.querySelector('#sortBtn').addEventListener('click', () => { st.ui.fieldSort = st.ui.fieldSort === 'down' ? 'up' : 'down'; st.saveUi(); renderPage(); });
       el.querySelectorAll('[data-cf]').forEach(b => b.addEventListener('click', () => { st.ui.checkFilter = b.dataset.cf; renderPage(); }));
       el.querySelector('#expProg').addEventListener('click', () => RF.exporters.exportProgress());
       el.querySelector('#sendProg')?.addEventListener('click', () => RF.exporters.sendProgressToServer());
@@ -5738,7 +5760,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       await tap(cv, fx + 8, fy + 8, 'touch');
       const sheet = document.getElementById('fieldSheet');
       check('Phone: tapping a hold shows its hole ID in the sheet', sheet.dataset.open === 'true' && sheet.textContent.includes(pos.hole.id), pos.hole.id);
-      sheet.querySelector('[data-s="installed"]').click();
+      sheet.querySelector('#shState').click();   // Pending → Installed
       check('Phone: checklist mark stored per revision', st.progress.items[fpl.id]?.state === 'installed');
       const sBefore = v.v.s;
       await tap(cv, fx + 8, fy + 8, 'touch'); await tap(cv, fx + 8, fy + 8, 'touch');
@@ -5800,7 +5822,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       check('Phone: primary touch targets ≥ 44 px', !small.length, small.map(b => b.textContent.trim().slice(0, 12)).join(', '));
       check('Phone: no horizontal page overflow', document.documentElement.scrollWidth <= window.innerWidth + 1, `${document.documentElement.scrollWidth}px`);
       // iPhone Safari zooms the whole page into any text field under 16 px (hold note, Find boxes).
+      q('#shMore').click(); await wait(30);
       const fsz = el => (el ? parseFloat(getComputedStyle(el).fontSize) : 0), sizes = [fsz(q('#shNote'))];
+      q('#shMore').click(); await wait(30);
       for (const tab of ['list', 'more', 'map']) { q(`[data-ft="${tab}"]`).click(); await wait(50); if (tab !== 'map') sizes.push(fsz(q('#findInput'))); }
       check('Phone: text fields are 16 px or larger, so iPhone Safari does not zoom in', sizes.every(z => z >= 16), sizes.join(' / ') + ' px');
       st.progress.items = {}; st.saveProgress();
