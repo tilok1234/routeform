@@ -8,87 +8,89 @@
 <title>ROUTEFORM — Gråveggen planner (preliminary)</title>
 <style data-rf>
 /* ROUTEFORM 0.2 — styles.css (desktop editor + phone field view) */
-:root{color-scheme:dark;--bg:#0c111b;--panel:#141d2a;--panel2:#1b2635;--line:#2a384a;--txt:#eaf1fa;--muted:#93a5bd;--accent:#e3a25f;--accent2:#f1bd88;--warn:#ffb35c;--bad:#ff7b72;--ok:#57c38b;--radius:12px;--fieldbar:56px}
+:root{color-scheme:dark;--bg:var(--g1);--panel:var(--g7);--panel2:var(--g12);--line:var(--g20);--txt:var(--g98);--muted:var(--g68);--accent:#e3a25f;--accent2:var(--accent-l30);--warn:#ffb35c;--bad:#ff7b72;--ok:#57c38b;--radius:12px;--fieldbar:56px}
+/* Colour tokens (Amber defaults; src/js/theme.js recomputes them for the chosen colour scheme) */
+:root{--accent-d6:#15181e;--accent-d25:#39312c;--accent-d87:#c38d57;--accent-d99:#e1a05e;--accent-l2:#e3a463;--accent-l30:#e9bc92;--accent-l56:#edd2bb;--accent-l61:#edd6c3;--bad-d16:#2d2027;--bad-d19:#33242a;--bad-d44:#6c3e40;--bad-d52:#804647;--bad-d54:#854849;--bad-d61:#97504f;--bad-d79:#c6635f;--bad-l47:#feb8b4;--bad-l54:#fdc0be;--bad-l82:#f7e1e5;--g0:#0b1019;--g0-a78:rgba(11,16,25,0.78);--g1:#0d121b;--g3:#10151f;--g4:#121720;--g4-a95:rgba(18,23,32,0.95);--g5-a82:rgba(20,25,34,0.82);--g5-a92:rgba(20,25,34,0.92);--g6:#161b24;--g7:#171d26;--g8:#191f28;--g9:#1b202a;--g10:#1d222c;--g10-a92:rgba(29,34,44,0.92);--g11:#1f242e;--g12:#212630;--g13:#232832;--g14:#252a34;--g15:#272c36;--g17:#2b303a;--g19:#2f343e;--g20:#313640;--g21:#333842;--g22:#353a44;--g23:#373c46;--g24:#393e48;--g25:#3b414b;--g27:#3f454f;--g28:#414751;--g29:#434953;--g32:#4a505a;--g33:#4c525c;--g37:#555b65;--g39:#595f69;--g40:#5c616b;--g61:#8d929c;--g68:#9ea4ad;--g71:#a6abb5;--g72:#a8aeb7;--g73:#abb0ba;--g75:#b0b5bf;--g77:#b5bac4;--g78:#b7bdc6;--g80:#bcc2cb;--g82:#c2c7d0;--g84:#c7ccd5;--g86:#ccd1db;--g88:#d1d6e0;--g89:#d4d9e2;--g90:#d6dce5;--g91:#d9dee7;--g92:#dce1ea;--g94:#e1e6ef;--g96:#e6ebf4;--g97:#e9eef7;--g98:#ecf1fa;--g100:#f1f6ff;--g100-a25:rgba(241,246,255,0.25);--g100-a40:rgba(241,246,255,0.4);--g100-a60:rgba(241,246,255,0.6);--g100-a70:rgba(241,246,255,0.7);--ok-d20:#192f2e;--ok-d22:#1b3230;--ok-d54:#336954;--ok-d55:#346b55;--ok-d63:#3a7a5f;--ok-l60:#b8e2d0;--ok-l76:#cfeae3;--warn-d15:#292525;--warn-d17:#2d2827;--warn-d19:#322b29;--warn-d20:#342d29;--warn-d39:#5f4a37;--warn-d48:#75593d;--warn-d61:#956e46;--warn-d94:#eea859;--warn-l40:#fbcfa3;--warn-l61:#f8ddc4}
 *{box-sizing:border-box;touch-action:manipulation}  /* no double-tap page zoom on phones; the wall map has its own pinch zoom */
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.4;font-size:13px;-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 button:disabled{cursor:not-allowed;opacity:.4}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-h2{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#c0cddd;margin:0 0 10px}
-h3{font-size:12px;margin:12px 0 6px;color:#d6e2f0}
+h2{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--g84);margin:0 0 10px}
+h3{font-size:12px;margin:12px 0 6px;color:var(--g92)}
 p{margin:0 0 8px}
 .muted,small{color:var(--muted)}
 .mono{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
 .rf{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
 
 /* top bar */
-.topbar{display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--line);background:#0f1622;flex-wrap:wrap}
+.topbar{display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--g3);flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .brandmark{width:30px;height:30px;border:2px solid var(--accent);border-radius:8px;transform:skewX(-5deg);position:relative;flex:0 0 30px}
 .brandmark:before,.brandmark:after{content:"";position:absolute;width:6px;height:17px;border-left:3px solid var(--accent);transform:rotate(35deg);top:4px;left:9px}.brandmark:after{left:16px}
 .brandname{font-weight:800;letter-spacing:.11em;font-size:14px}
 .subbrand{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}
-.pill{border:1px solid #536073;background:#1d2c3d;border-radius:100px;padding:2px 8px;font-size:10px;color:#b4c5d7;letter-spacing:.06em;font-weight:600}
-.modes{display:flex;background:#151f2d;border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;margin-left:auto}
-.modes button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font-weight:600;font-size:12px;color:#aebfd3}
-.modes button[aria-selected=true]{background:#2a3a52;color:#fff;box-shadow:inset 0 0 0 1px #4c6280}
+.pill{border:1px solid var(--g39);background:var(--g14);border-radius:100px;padding:2px 8px;font-size:10px;color:var(--g80);letter-spacing:.06em;font-weight:600}
+.modes{display:flex;background:var(--g8);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;margin-left:auto}
+.modes button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font-weight:600;font-size:12px;color:var(--g78)}
+.modes button[aria-selected=true]{background:var(--g22);color:var(--g100);box-shadow:inset 0 0 0 1px var(--g40)}
 .top-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.btn{border:1px solid #3b4a60;background:#233044;color:#e5effb;border-radius:9px;min-height:34px;padding:6px 11px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;justify-content:center}
-.btn:hover{background:#2d4158}
-.btn.primary{background:#e5a365;color:#16181e;border-color:#e5a365}.btn.primary:hover{background:var(--accent2)}
-.btn.subtle{background:transparent;border-color:transparent;color:#aabbd0}.btn.subtle:hover{background:#1e2a3b}
-.btn.danger{border-color:#834a52;color:#ffb7b3}
+.btn{border:1px solid var(--g29);background:var(--g17);color:var(--g97);border-radius:9px;min-height:34px;padding:6px 11px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn:hover{background:var(--g25)}
+.btn.primary{background:var(--accent-l2);color:var(--accent-d6);border-color:var(--accent-l2)}.btn.primary:hover{background:var(--accent2)}
+.btn.subtle{background:transparent;border-color:transparent;color:var(--g77)}.btn.subtle:hover{background:var(--g14)}
+.btn.danger{border-color:var(--bad-d54);color:var(--bad-l47)}
 .btn.small{min-height:28px;padding:4px 8px;font-size:11px}
 .btn.icon{min-width:34px;padding:6px}
-.btn.on{border-color:var(--accent);background:#3b302c;color:#ffd5a8}
-.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:7px;background:#1e2d40;border:1px solid #34485f;color:#c4d4e6;font-size:11px;white-space:nowrap}
-.chip.warn{background:#3a2a17;border-color:#7a5326;color:#ffd39b}
-.chip.bad{background:#3a1d1d;border-color:#8a3a3a;color:#ffc1bb}
-.chip.ok{background:#173326;border-color:#2f6b4c;color:#aef0c9}
+.btn.on{border-color:var(--accent);background:var(--accent-d25);color:var(--accent-l56)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:7px;background:var(--g15);border:1px solid var(--g28);color:var(--g86);font-size:11px;white-space:nowrap}
+.chip.warn{background:var(--warn-d20);border-color:var(--warn-d48);color:var(--warn-l40)}
+.chip.bad{background:var(--bad-d19);border-color:var(--bad-d52);color:var(--bad-l54)}
+.chip.ok{background:var(--ok-d22);border-color:var(--ok-d55);color:var(--ok-l60)}
 .conf{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:5px;color:#fff;white-space:nowrap}
 
 /* calibration ribbon */
-.ribbon{display:flex;align-items:center;gap:10px;padding:6px 14px;background:repeating-linear-gradient(135deg,#3b2410 0 14px,#33200f 14px 28px);border-bottom:1px solid #7a5326;color:#ffe2bd;font-size:12px}
-.ribbon b{color:#fff;letter-spacing:.05em}
+.ribbon{display:flex;align-items:center;gap:10px;padding:6px 14px;background:repeating-linear-gradient(135deg,var(--warn-d19) 0 14px,var(--warn-d15) 14px 28px);border-bottom:1px solid var(--warn-d48);color:var(--warn-l61);font-size:12px}
+.ribbon b{color:var(--g100);letter-spacing:.05em}
 .ribbon .grow{flex:1;min-width:0}
-.ribbon.verified{background:#173326;border-color:#2f6b4c;color:#c9f5dc}
+.ribbon.verified{background:var(--ok-d22);border-color:var(--ok-d55);color:var(--ok-l76)}
 
 /* workspace */
 .workspace{flex:1;display:grid;grid-template-columns:292px minmax(0,1fr) 336px;min-height:0}
-.side{overflow-y:auto;padding:12px;background:#0f1520;min-height:0}
+.side{overflow-y:auto;padding:12px;background:var(--g3);min-height:0}
 .side.left{border-right:1px solid var(--line)}.side.right{border-left:1px solid var(--line)}
 .section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:10px}
-.section>h2{border-bottom:1px solid #2d3a4c;padding-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.stage{position:relative;min-width:0;min-height:0;overflow:hidden;background:#151c26}
+.section>h2{border-bottom:1px solid var(--g22);padding-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stage{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--g6)}
 #wallCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;cursor:grab}
 .stage.placing #wallCanvas{cursor:crosshair}
 .hud{position:absolute;display:flex;gap:6px;align-items:center;pointer-events:none}
 .hud>*{pointer-events:auto}
 .hud-tl{top:8px;left:44px;flex-wrap:wrap;max-width:calc(100% - 260px)}
 .hud-tr{top:8px;right:8px}
-.hud-bl{bottom:26px;left:44px;right:180px;font-size:11px;color:#d7e2ef;text-shadow:0 1px 2px #000;pointer-events:none}
-.prelim{background:#7a2e14;color:#ffe5d2;border:1px solid #c26a3c;font-weight:800;font-size:10px;letter-spacing:.08em;padding:3px 7px;border-radius:5px}
-.readout{background:rgba(10,14,20,.78);border:1px solid #2c3a4d;font-size:11px;padding:3px 7px;border-radius:5px;color:#cfe0f2;font-variant-numeric:tabular-nums}
-.hud .btn{background:rgba(24,34,48,.92)}
-.hud select{background:rgba(24,34,48,.92);border:1px solid #3b4a60;border-radius:9px;min-height:34px;padding:4px 6px;font-size:12px}
-.minimap{position:absolute;right:8px;bottom:26px;width:96px;height:132px;border:1px solid #3b4a60;border-radius:7px;cursor:pointer;touch-action:none}
-.climbbar{position:absolute;left:44px;right:116px;bottom:26px;margin:0 auto;max-width:780px;z-index:15;display:flex;flex-direction:column;gap:6px;background:rgba(16,23,34,.95);border:1px solid #3b4a60;border-radius:12px;padding:8px 10px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.hud-bl{bottom:26px;left:44px;right:180px;font-size:11px;color:var(--g92);text-shadow:0 1px 2px var(--g0);pointer-events:none}
+.prelim{background:var(--bad-d44);color:var(--bad-l82);border:1px solid var(--bad-d79);font-weight:800;font-size:10px;letter-spacing:.08em;padding:3px 7px;border-radius:5px}
+.readout{background:var(--g0-a78);border:1px solid var(--g21);font-size:11px;padding:3px 7px;border-radius:5px;color:var(--g91);font-variant-numeric:tabular-nums}
+.hud .btn{background:var(--g10-a92)}
+.hud select{background:var(--g10-a92);border:1px solid var(--g29);border-radius:9px;min-height:34px;padding:4px 6px;font-size:12px}
+.minimap{position:absolute;right:8px;bottom:26px;width:96px;height:132px;border:1px solid var(--g29);border-radius:7px;cursor:pointer;touch-action:none}
+.climbbar{position:absolute;left:44px;right:116px;bottom:26px;margin:0 auto;max-width:780px;z-index:15;display:flex;flex-direction:column;gap:6px;background:var(--g4-a95);border:1px solid var(--g29);border-radius:12px;padding:8px 10px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .cb-row{display:flex;align-items:center;gap:8px;min-width:0}
 .cb-row .sw{width:12px;height:12px;border-radius:50%;flex:none}
 .cb-title{font-size:13px;white-space:nowrap}
-.cb-move{flex:1;min-width:0;font-size:12px;color:#cfe0f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.cb-move{flex:1;min-width:0;font-size:12px;color:var(--g91);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .cb-play{min-width:92px}
 .cb-scrub{flex:1;min-width:80px;accent-color:var(--accent)}
 .cb-opts{flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .cb-opts label{display:flex;align-items:center;gap:5px}
-.cb-opts select{background:#0e1725;border:1px solid #3b4a60;border-radius:8px;min-height:30px;padding:2px 6px;color:var(--txt);font-size:12px}
+.cb-opts select{background:var(--g4);border:1px solid var(--g29);border-radius:8px;min-height:30px;padding:2px 6px;color:var(--txt);font-size:12px}
 .cb-opts .chip{cursor:pointer;margin-left:auto}
 .cb-note{margin:0;font-size:11px;color:var(--muted);line-height:1.35}
 .htable{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
 .htable th{text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line)}
-.htable td{padding:4px 6px;border-bottom:1px solid #223044}
-.htable tr.on td{background:#1f2b3c}
+.htable td{padding:4px 6px;border-bottom:1px solid var(--g17)}
+.htable tr.on td{background:var(--g14)}
 .htable .warn-t{color:var(--warn)}
 .stage.climbing #status{display:none}
 /* phone: the player bar spans the bottom of the map; scrubber on its own line, options scroll sideways */
@@ -110,14 +112,14 @@ body.field .cb-opts .chip{order:-1;flex:none;margin-left:0;min-height:44px}
 body.field .stage.climbing .hud-tl,body.field .stage.climbing .minimap{display:none}
 /* phone: the wall map gets the space; the ⚠ button in the top row carries the calibration warning */
 body.field .hud-tl,body.field .minimap{display:none}
-.popover{position:absolute;top:48px;right:8px;z-index:20;background:#172231;border:1px solid #3b4a60;border-radius:10px;padding:10px;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.check{display:flex;align-items:center;gap:8px;font-size:12px;color:#d1deee;padding:4px 0;cursor:pointer}
+.popover{position:absolute;top:48px;right:8px;z-index:20;background:var(--g10);border:1px solid var(--g29);border-radius:10px;padding:10px;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g90);padding:4px 0;cursor:pointer}
 .check input{accent-color:var(--accent);width:16px;height:16px}
 
 /* forms */
 .field{display:flex;flex-direction:column;gap:3px;min-width:0;margin-bottom:8px}
-.field label,.lbl{font-size:11px;color:#a5b6ca;font-weight:700}
-.field input,.field select,.field textarea,.inp{width:100%;border:1px solid #384a61;background:#0e1725;color:#f1f6ff;border-radius:8px;padding:6px 8px;min-height:32px;font-size:12px}
+.field label,.lbl{font-size:11px;color:var(--g75);font-weight:700}
+.field input,.field select,.field textarea,.inp{width:100%;border:1px solid var(--g29);background:var(--g4);color:var(--g100);border-radius:8px;padding:6px 8px;min-height:32px;font-size:12px}
 .field textarea{resize:vertical;min-height:64px}
 .field input[type=checkbox],.field input[type=radio]{width:auto;min-height:0;padding:0;accent-color:var(--accent)}
 .field input[type=color]{padding:2px;height:32px}
@@ -126,78 +128,78 @@ body.field .hud-tl,body.field .minimap{display:none}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .row.end{justify-content:flex-end}
-.hint{font-size:11px;line-height:1.5;color:#9eaec4;margin:6px 0 0}
-.callout{font-size:11px;background:#263043;border-left:3px solid #dda368;color:#ced9e8;padding:8px 9px;border-radius:5px;margin:8px 0;line-height:1.5}
-.callout.bad{border-left-color:var(--bad);background:#2f2025}
-.callout.ok{border-left-color:var(--ok);background:#1b2f27}
-.sep{height:1px;background:#293949;margin:10px 0}
+.hint{font-size:11px;line-height:1.5;color:var(--g72);margin:6px 0 0}
+.callout{font-size:11px;background:var(--g17);border-left:3px solid var(--accent-d99);color:var(--g89);padding:8px 9px;border-radius:5px;margin:8px 0;line-height:1.5}
+.callout.bad{border-left-color:var(--bad);background:var(--bad-d16)}
+.callout.ok{border-left-color:var(--ok);background:var(--ok-d20)}
+.sep{height:1px;background:var(--g21);margin:10px 0}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px}
 .kv dt{color:var(--muted)}.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
 
 /* routes & catalog */
 .route-list{display:grid;gap:6px}
-.routeitem{border:1px solid #304153;background:#182535;border-radius:9px;padding:6px 8px;display:flex;gap:8px;align-items:center;width:100%;text-align:left}
-.routeitem.active{border-color:#a0acb8;background:#26374a}
-.routeitem .sw{width:14px;height:14px;border-radius:4px;flex:0 0 14px;border:1px solid rgba(255,255,255,.4)}
+.routeitem{border:1px solid var(--g24);background:var(--g11);border-radius:9px;padding:6px 8px;display:flex;gap:8px;align-items:center;width:100%;text-align:left}
+.routeitem.active{border-color:var(--g71);background:var(--g20)}
+.routeitem .sw{width:14px;height:14px;border-radius:4px;flex:0 0 14px;border:1px solid var(--g100-a40)}
 .routeitem .nm{flex:1;min-width:0}
 .routeitem strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .routeitem small{font-size:10px}
-.eye{border:0;background:transparent;padding:4px 6px;border-radius:6px;color:#b9c9db;font-size:14px}
+.eye{border:0;background:transparent;padding:4px 6px;border-radius:6px;color:var(--g82);font-size:14px}
 .eye.off{opacity:.35}
 .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:8px 0}
-.seg button{border:1px solid #34455b;background:#1c2838;border-radius:7px;padding:5px 2px;font-size:11px;color:#c3d2e4}
-.seg button.on{border-color:var(--accent);background:#3b302c;color:#ffd5a8}
+.seg button{border:1px solid var(--g27);background:var(--g13);border-radius:7px;padding:5px 2px;font-size:11px;color:var(--g86)}
+.seg button.on{border-color:var(--accent);background:var(--accent-d25);color:var(--accent-l56)}
 .kit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.kit button{border:1px solid #314052;background:#1b2636;border-radius:9px;padding:5px 6px;display:flex;align-items:center;gap:7px;text-align:left;min-height:46px;font-size:11px;color:#dce6f3}
-.kit button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:#2c2c30}
+.kit button{border:1px solid var(--g24);background:var(--g12);border-radius:9px;padding:5px 6px;display:flex;align-items:center;gap:7px;text-align:left;min-height:46px;font-size:11px;color:var(--g94)}
+.kit button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--g15)}
 .kit svg{flex:0 0 34px}
 .toolrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.toolrow button{border:1px solid #34455b;background:#1c2838;color:#cad9ed;border-radius:9px;min-height:44px;font-size:11px;font-weight:600}
-.toolrow button.on{border-color:var(--accent);background:#3b302c;color:#ffd5a8}
+.toolrow button{border:1px solid var(--g27);background:var(--g13);color:var(--g88);border-radius:9px;min-height:44px;font-size:11px;font-weight:600}
+.toolrow button.on{border-color:var(--accent);background:var(--accent-d25);color:var(--accent-l56)}
 .memb{display:flex;flex-wrap:wrap;gap:6px}
-.memb label{display:flex;align-items:center;gap:5px;border:1px solid #34455b;border-radius:7px;padding:4px 7px;font-size:11px;cursor:pointer}
+.memb label{display:flex;align-items:center;gap:5px;border:1px solid var(--g27);border-radius:7px;padding:4px 7px;font-size:11px;cursor:pointer}
 .holdid{font-size:20px;font-weight:800;letter-spacing:.02em}
-.review{background:#3a2a17;border:1px solid #7a5326;color:#ffd39b;border-radius:8px;padding:8px;font-size:11px;margin:8px 0}
+.review{background:var(--warn-d20);border:1px solid var(--warn-d48);color:var(--warn-l40);border-radius:8px;padding:8px;font-size:11px;margin:8px 0}
 table.mini{width:100%;border-collapse:collapse;font-size:11px}
-table.mini td,table.mini th{border-bottom:1px solid #2a384a;padding:4px 3px;text-align:left;vertical-align:top}
-table.mini input{width:70px;border:1px solid #384a61;background:#0e1725;border-radius:6px;padding:3px 5px;font-size:11px}
-.photo-reg{position:relative;width:100%;aspect-ratio:4/3;background:#0b0f15;border:1px solid #3b4a60;border-radius:8px;overflow:hidden;touch-action:none}
+table.mini td,table.mini th{border-bottom:1px solid var(--g20);padding:4px 3px;text-align:left;vertical-align:top}
+table.mini input{width:70px;border:1px solid var(--g29);background:var(--g4);border-radius:6px;padding:3px 5px;font-size:11px}
+.photo-reg{position:relative;width:100%;aspect-ratio:4/3;background:var(--g0);border:1px solid var(--g29);border-radius:8px;overflow:hidden;touch-action:none}
 .photo-reg canvas{width:100%;height:100%;display:block;cursor:crosshair}
 .thumbs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-.thumb{border:1px solid #34455b;border-radius:8px;overflow:hidden;background:#0b0f15;text-align:left;padding:0}
+.thumb{border:1px solid var(--g27);border-radius:8px;overflow:hidden;background:var(--g0);text-align:left;padding:0}
 .thumb img{width:100%;height:76px;object-fit:cover;display:block}
 .thumb span{display:block;padding:4px 6px;font-size:10px}
 .thumb.on{border-color:var(--accent)}
 
 /* menus, modals, toasts */
-.menu{position:fixed;z-index:60;background:#172231;border:1px solid #3b4a60;border-radius:10px;padding:5px;min-width:250px;box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.menu{position:fixed;z-index:60;background:var(--g10);border:1px solid var(--g29);border-radius:10px;padding:5px;min-width:250px;box-shadow:0 14px 40px rgba(0,0,0,.55)}
 .menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:7px;font-size:12px}
-.menu button:hover{background:#24344a}
-.menu hr{border:0;border-top:1px solid #2d3d52;margin:4px 0}
+.menu button:hover{background:var(--g19)}
+.menu hr{border:0;border-top:1px solid var(--g23);margin:4px 0}
 .modal-back{position:fixed;inset:0;background:rgba(4,8,14,.66);z-index:80;display:flex;align-items:center;justify-content:center;padding:14px}
-.modal{background:#141d2a;border:1px solid #3b4a60;border-radius:14px;max-width:560px;width:100%;max-height:calc(100dvh - 28px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.modal{background:var(--g7);border:1px solid var(--g29);border-radius:14px;max-width:560px;width:100%;max-height:calc(100dvh - 28px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .modal.wide{max-width:860px}
 .modal header{padding:14px 16px 6px;font-weight:800;font-size:15px}
 .modal .body{padding:6px 16px 10px;overflow-y:auto;font-size:13px}
-.modal footer{padding:10px 16px 14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid #26354a}
+.modal footer{padding:10px 16px 14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--g19)}
 .toasts{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;z-index:90;pointer-events:none;width:min(520px,calc(100vw - 24px))}
-.toast{background:#1d2b3e;border:1px solid #3d5470;border-radius:10px;padding:9px 12px;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.toast.warn{border-color:#9a6a2c;background:#33240f}.toast.bad{border-color:#a04444;background:#341a1a}.toast.ok{border-color:#2f7b55;background:#15301f}
+.toast{background:var(--g14);border:1px solid var(--g33);border-radius:10px;padding:9px 12px;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.toast.warn{border-color:var(--warn-d61);background:var(--warn-d17)}.toast.bad{border-color:var(--bad-d61);background:var(--bad-d16)}.toast.ok{border-color:var(--ok-d63);background:var(--ok-d20)}
 .qr{background:#fff;padding:10px;border-radius:8px;display:inline-block}
 .qr svg{display:block;width:200px;height:200px}
-.optcard{border:1px solid #34455b;border-radius:10px;padding:10px;margin-bottom:10px;background:#172232}
+.optcard{border:1px solid var(--g27);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--g10)}
 .optcard h3{margin-top:0}
 
 /* ---------------- phone / field view ---------------- */
 .field-top,.field-tabs,.field-sheet,.field-page{display:none}
 body.field .topbar,body.field .side,body.field .ribbon,body.field .hud-bl,body.field .hud-tl .readout{display:none}
 body.field .workspace{grid-template-columns:minmax(0,1fr)}
-body.field .field-top{display:block;background:#0f1622;border-bottom:1px solid var(--line);padding:6px 8px 6px;padding-top:max(6px,env(safe-area-inset-top))}
-body.field .field-tabs{display:grid;grid-template-columns:repeat(3,1fr);background:#0f1622;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+body.field .field-top{display:block;background:var(--g3);border-bottom:1px solid var(--line);padding:6px 8px 6px;padding-top:max(6px,env(safe-area-inset-top))}
+body.field .field-tabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--g3);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 body.field .hud-tl{left:38px;top:auto;bottom:24px}
 body.field .prelim{font-size:9px;padding:2px 5px;opacity:.92}
 body.field .hud-tr{flex-direction:column;align-items:stretch;top:8px;right:6px;gap:6px}
-body.field .hud-tr .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:rgba(18,26,38,.82)}
+body.field .hud-tr .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:var(--g5-a82)}
 body.field .hud-tr [data-zoom=fit]{font-size:12px}
 #fullBtn{display:none}
 body.field #fullBtn{display:flex;align-items:center;justify-content:center}
@@ -211,82 +213,103 @@ body.field #layersBtn,body.field #bandSel{display:none}
 body.field .minimap{width:56px;height:84px;right:6px;bottom:26px}
 .ft-row{display:flex;align-items:center;gap:6px;min-width:0}
 .ft-row .chips{flex:1;min-width:0}
-.ft-btn{flex:none;width:44px;height:44px;border-radius:22px;border:1px solid #3b4a60;background:#1a2535;font-size:17px;font-weight:800;color:#e6edf5;padding:0}
-.ft-btn.ft-climb{border-color:#c98a4a;color:#ffd9b0}
-.ft-warn{border-color:#c26a3c;background:#7a2e14;color:#ffe5d2}
+.ft-btn{flex:none;width:44px;height:44px;border-radius:22px;border:1px solid var(--g29);background:var(--g11);font-size:17px;font-weight:800;color:var(--g96);padding:0}
+.ft-btn.ft-climb{border-color:var(--accent-d87);color:var(--accent-l61)}
+.ft-warn{border-color:var(--bad-d79);background:var(--bad-d44);color:var(--bad-l82)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:6px 0 2px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.rchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 13px;border-radius:22px;border:1px solid #3b4a60;background:#1a2535;font-weight:700;font-size:13px;white-space:nowrap}
-.rchip .sw{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.7)}
-.rchip.on{background:#e9eef5;color:#111;border-color:#fff}
-.field-tabs button{min-height:var(--fieldbar);border:0;background:transparent;color:#9fb1c7;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.rchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 13px;border-radius:22px;border:1px solid var(--g29);background:var(--g11);font-weight:700;font-size:13px;white-space:nowrap}
+.rchip .sw{width:14px;height:14px;border-radius:50%;border:2px solid var(--g100-a70)}
+.rchip.on{background:var(--g97);color:var(--g1);border-color:var(--g100)}
+.field-tabs button{min-height:var(--fieldbar);border:0;background:transparent;color:var(--g73);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .field-tabs button b{font-size:18px;line-height:1}
-.field-tabs button.on{color:#fff;background:#1c2a3c}
-body.field .field-sheet[data-open=true]{display:block;position:absolute;left:0;right:0;bottom:0;z-index:30;max-height:62%;overflow-y:auto;background:#141d2a;border-top:1px solid #3d5068;border-radius:16px 16px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5);padding:10px 14px 14px;max-width:620px;margin:0 auto}
-body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z-index:25;overflow-y:auto;background:#0f1520;padding:12px 12px 24px}
-.sheet-grab{width:44px;height:5px;border-radius:3px;background:#4a5b70;margin:0 auto 8px}
+.field-tabs button.on{color:var(--g100);background:var(--g14)}
+body.field .field-sheet[data-open=true]{display:block;position:absolute;left:0;right:0;bottom:0;z-index:30;max-height:62%;overflow-y:auto;background:var(--g7);border-top:1px solid var(--g32);border-radius:16px 16px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.5);padding:10px 14px 14px;max-width:620px;margin:0 auto}
+body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z-index:25;overflow-y:auto;background:var(--g3);padding:12px 12px 24px}
+.sheet-grab{width:44px;height:5px;border-radius:3px;background:var(--g37);margin:0 auto 8px}
 .sheet-head{display:flex;align-items:center;gap:10px}
-.sheet-head .sw{width:20px;height:20px;border-radius:50%;border:2px solid #fff;flex:0 0 20px}
-.bighole{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:26px;font-weight:800;letter-spacing:.02em;background:#0b111a;border:1px solid #3b4a60;border-radius:10px;padding:8px 12px;margin:8px 0;word-break:break-all}
+.sheet-head .sw{width:20px;height:20px;border-radius:50%;border:2px solid var(--g100);flex:0 0 20px}
+.bighole{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:26px;font-weight:800;letter-spacing:.02em;background:var(--g0);border:1px solid var(--g29);border-radius:10px;padding:8px 12px;margin:8px 0;word-break:break-all}
 .count{font-size:15px;line-height:1.5}
 .count b{font-size:17px}
 .statusbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
-.statusbtns button{min-height:50px;border-radius:10px;border:1px solid #3b4a60;background:#1b2636;font-weight:700;font-size:13px}
-.statusbtns button.on[data-s=installed]{background:#1f6b45;border-color:#57c38b}
-.statusbtns button.on[data-s=needs_fix]{background:#7a3410;border-color:#ff9a5c}
-.statusbtns button.on[data-s=pending]{background:#2a3a52;border-color:#7d93b1}
+.statusbtns button{min-height:50px;border-radius:10px;border:1px solid var(--g29);background:var(--g12);font-weight:700;font-size:13px}
+.statusbtns button.on[data-s=installed]{background:var(--ok-d54);border-color:var(--ok)}
+.statusbtns button.on[data-s=needs_fix]{background:var(--warn-d39);border-color:var(--warn-d94)}
+.statusbtns button.on[data-s=pending]{background:var(--g22);border-color:var(--g61)}
 .navbtns{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:6px}
 .navbtns button{min-height:50px;border-radius:10px;font-weight:700;font-size:14px}
 /* compact hold card: one line of position, one row of actions, the rest behind Details */
 .sh-line{margin:8px 0;font-size:14px;line-height:1.4}
 .sh-nav{grid-template-columns:44px 1.2fr 1fr 44px;margin-top:2px}
 .sh-nav button{min-height:44px;padding:0 4px}
-.sh-nav .st-installed{background:#1f6b45;border-color:#57c38b}
-.sh-nav .st-needs_fix{background:#7a3410;border-color:#ff9a5c}
-.sh-details{margin-top:10px;border-top:1px solid #2c3a4d;padding-top:6px}
+.sh-nav .st-installed{background:var(--ok-d54);border-color:var(--ok)}
+.sh-nav .st-needs_fix{background:var(--warn-d39);border-color:var(--warn-d94)}
+.sh-details{margin-top:10px;border-top:1px solid var(--g21);padding-top:6px}
 .progfile{margin-top:12px}
-.progfile summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer;color:#c3d2e4}
+.progfile summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer;color:var(--g86)}
 .pb-deg{flex:none;min-width:34px;text-align:center;font-weight:700}
 #pbMsg:empty{display:none}
 .mv-follow{min-height:44px;font-size:14px}
-.rotglyph{display:inline-flex;width:44px;height:44px;border-radius:50%;border:2px solid #7d93b1;align-items:center;justify-content:center;font-size:22px;flex:0 0 44px}
+.rotglyph{display:inline-flex;width:44px;height:44px;border-radius:50%;border:2px solid var(--g61);align-items:center;justify-content:center;font-size:22px;flex:0 0 44px}
 .list{display:grid;gap:6px}
-.li{display:flex;align-items:center;gap:10px;min-height:56px;padding:6px 10px;border-radius:10px;border:1px solid #2f4056;background:#162131;text-align:left;width:100%}
-.li .sw{width:16px;height:16px;border-radius:50%;flex:0 0 16px;border:2px solid rgba(255,255,255,.6)}
+.li{display:flex;align-items:center;gap:10px;min-height:56px;padding:6px 10px;border-radius:10px;border:1px solid var(--g24);background:var(--g9);text-align:left;width:100%}
+.li .sw{width:16px;height:16px;border-radius:50%;flex:0 0 16px;border:2px solid var(--g100-a60)}
 .li .main{flex:1;min-width:0}
 .li .main b{display:block;font-size:14px}
 .li .main span{font-size:12px;color:var(--muted)}
 .li .st{font-size:18px;width:26px;text-align:center}
-.bar{height:10px;border-radius:5px;background:#26354a;overflow:hidden}
+.save-ind{font-size:11px;color:var(--muted);white-space:nowrap}.save-ind.bad{color:var(--bad)}
+.savenote{font-size:12px;color:var(--muted);margin:6px 0 8px}.savenote.bad{color:var(--bad)}
+/* plans on this device */
+.plans{display:grid;gap:8px;margin:8px 0}
+.plan{border:1px solid var(--g24);background:var(--g9);border-radius:10px;padding:8px 10px}
+.plan.open{border-color:var(--accent)}
+.plan-main{display:block;width:100%;border:0;background:transparent;text-align:left;padding:2px 0 6px;min-height:44px}
+.plan-main b{display:block;font-size:14px}
+.plan-main span{display:block;font-size:12px;color:var(--muted)}
+.plan-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.plan-rename{display:flex;gap:6px;margin-bottom:6px}
+.plan-rename input{flex:1;min-width:0;min-height:40px;border-radius:8px;border:1px solid var(--g29);background:var(--g4);padding:6px 9px;font-size:16px}
+body.field .plan-acts .btn{min-height:40px;padding:4px 12px;font-size:13px}
+/* colour schemes */
+.themes{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.themes button{display:flex;align-items:center;gap:10px;min-height:56px;padding:8px 10px;border-radius:10px;border:1px solid var(--g24);background:var(--g9);text-align:left;width:100%}
+.themes button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.themes .tp{position:relative;width:38px;height:38px;border-radius:9px;flex:0 0 38px;border:1px solid var(--g29);overflow:hidden}
+.themes .tp em{position:absolute;left:7px;top:10px;width:18px;height:4px;border-radius:2px}
+.themes .tp i{position:absolute;right:6px;bottom:6px;width:12px;height:12px;border-radius:50%}
+.themes .main{min-width:0}.themes .main b{display:block;font-size:14px}.themes .main span{font-size:12px;color:var(--muted)}
+.bar{height:10px;border-radius:5px;background:var(--g19);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok)}
 .bigbtn{width:100%;min-height:50px;font-size:14px;margin-bottom:8px}
 /* phone editing: Select / Place tools, edit bar, place bar, move pad */
 .ftools{display:none}
 body.field .ftools[data-on=true]{display:flex;flex-wrap:wrap;position:absolute;top:8px;left:8px;right:60px;z-index:12;gap:6px;align-items:center;pointer-events:none}
 body.field .ftools>*{pointer-events:auto}
-.seg2{display:flex;background:rgba(18,26,38,.92);border:1px solid #3b4a60;border-radius:12px;padding:3px;gap:3px}
-.seg2 button{min-height:44px;min-width:68px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:13px;color:#c3d2e4;padding:0 8px}
-.seg2 button.on{background:#e9eef5;color:#111}
-body.field .ftools .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:rgba(18,26,38,.82)}
+.seg2{display:flex;background:var(--g5-a92);border:1px solid var(--g29);border-radius:12px;padding:3px;gap:3px}
+.seg2 button{min-height:44px;min-width:68px;border:0;border-radius:9px;background:transparent;font-weight:700;font-size:13px;color:var(--g86);padding:0 8px}
+.seg2 button.on{background:var(--g97);color:var(--g1)}
+body.field .ftools .btn{width:44px;height:44px;min-height:44px;padding:0;font-size:20px;background:var(--g5-a82)}
 .editbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 2px}
-.editbar button,.nudge button{min-height:50px;border-radius:10px;border:1px solid #3b4a60;background:#1b2636;font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
+.editbar button,.nudge button{min-height:50px;border-radius:10px;border:1px solid var(--g29);background:var(--g12);font-weight:700;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px}
 .editbar button b{font-size:18px;line-height:1}
-.editbar button.danger{border-color:#834a52;color:#ffb7b3}
+.editbar button.danger{border-color:var(--bad-d54);color:var(--bad-l47)}
 .nudge{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 4px}
 .nudge button{font-size:20px;min-height:56px}
 .pb-row{display:flex;align-items:center;gap:8px;margin:2px 0 6px}
-.pb-row .sw{width:18px;height:18px;border-radius:50%;border:2px solid #fff;flex:0 0 18px}
-.pb-row select{flex:1;min-width:0;min-height:44px;background:#0e1725;border:1px solid #384a61;border-radius:10px;padding:0 10px;color:var(--txt)}
+.pb-row .sw{width:18px;height:18px;border-radius:50%;border:2px solid var(--g100);flex:0 0 18px}
+.pb-row select{flex:1;min-width:0;min-height:44px;background:var(--g4);border:1px solid var(--g29);border-radius:10px;padding:0 10px;color:var(--txt)}
 .pb-row .btn.icon{min-width:44px;min-height:44px;font-size:18px}
 .pb-rot{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
 .pb-rot .rotglyph{width:36px;height:36px;flex-basis:36px;font-size:18px}
 .pb-kit{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
 .pb-kit::-webkit-scrollbar{display:none}
-.pb-kit button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:74px;min-height:66px;border:1px solid #314052;background:#1b2636;border-radius:10px;padding:4px 6px;font-size:11px;color:#dce6f3}
-.pb-kit button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:#2c2c30}
+.pb-kit button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:74px;min-height:66px;border:1px solid var(--g24);background:var(--g12);border-radius:10px;padding:4px 6px;font-size:11px;color:var(--g94)}
+.pb-kit button.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--g15)}
 .swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.swatches button{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}
-.swatches button.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.swatches button{width:40px;height:40px;border-radius:50%;border:2px solid var(--g100-a25)}
+.swatches button.on{border-color:var(--g100);box-shadow:0 0 0 2px var(--accent)}
 .swatches input[type=color]{width:52px;height:40px;padding:2px}
 body.field input,body.field select,body.field textarea{font-size:16px!important}  /* smaller text makes iOS zoom the whole page into the field */
 body.field .modal footer .btn{min-height:44px;padding:0 16px;font-size:14px}
@@ -301,7 +324,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-03T17:46:45.401Z">
+<meta name="routeform-build" content="2026-11-03T19:33:50.386Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -437,6 +460,103 @@ globalThis.RF_ASSETS = { photos: {} };
     hexToRgb, rgbToHex, shade, luminance, textOn, isHex, fmtM, fmtMm, clock, plural, ordinal, slug,
     download, readFile, loadImage, debounce
   };
+})(globalThis.RF = globalThis.RF || {});
+</script>
+<script data-rf>
+/* ROUTEFORM 0.4 — theme.js
+ * Colour schemes. styles.css paints with colour tokens worked out from six base colours per scheme:
+ *   --gN         N% of the way from the background (ink) to the text colour (paper)
+ *   --accent-dN  N% accent mixed into ink (dark tints: button fills); same for warn, bad, ok
+ *   --accent-lN  accent moved N% towards paper (light tints: text on a tinted fill)
+ *   -aN suffix   the same colour at N% opacity
+ * Mixing is done in OKLab so tints keep their hue. The Amber scheme reproduces the original look;
+ * the light scheme just swaps ink and paper, so the same tokens turn into a light interface. */
+(function (RF) {
+  'use strict';
+  const KEY = 'routeform.theme';
+
+  const THEMES = [
+    { id: 'amber', name: 'Amber', note: 'Dark blue-black with amber (the original)', scheme: 'dark', ink: '#0b1019', paper: '#f1f6ff', accent: '#e3a25f', warn: '#ffb35c', bad: '#ff7b72', ok: '#57c38b' },
+    { id: 'ice', name: 'Ice', note: 'Dark slate with ice blue', scheme: 'dark', ink: '#071419', paper: '#e9f7fb', accent: '#5ccbf2', warn: '#ffb35c', bad: '#ff7b72', ok: '#5fd39a' },
+    { id: 'violet', name: 'Violet', note: 'Dark plum with lavender', scheme: 'dark', ink: '#100d1b', paper: '#f2effb', accent: '#b39dff', warn: '#ffb35c', bad: '#ff7b86', ok: '#5fcf98' },
+    { id: 'rose', name: 'Rose', note: 'Dark berry with pink', scheme: 'dark', ink: '#150b12', paper: '#fbeff5', accent: '#ff8fc0', warn: '#ffbd66', bad: '#ff6f5e', ok: '#63cf95' },
+    { id: 'day', name: 'Daylight', note: 'Light, for bright rooms', scheme: 'light', ink: '#f5f7fa', paper: '#0e1622', accent: '#1960c4', warn: '#b45d04', bad: '#c62f2f', ok: '#17844b' }
+  ];
+  const AUTO = { id: 'auto', name: 'Match the phone', note: 'Amber when the phone is in dark mode, Daylight in light mode' };
+
+  // Every token styles.css uses (a Node test keeps this list and the stylesheet in step).
+  const TOKENS = (
+    'accent-d6 accent-d25 accent-d87 accent-d99 accent-l2 accent-l30 accent-l56 accent-l61 bad-d16 bad-d19 bad-d44 bad-d52 bad-d54 bad-d61 bad-d79 bad-l47 ' +
+    'bad-l54 bad-l82 g0 g0-a78 g1 g3 g4 g4-a95 g5-a82 g5-a92 g6 g7 g8 g9 g10 g10-a92 g11 g12 g13 g14 g15 g17 g19 g20 g21 g22 g23 g24 g25 g27 g28 g29 g32 ' +
+    'g33 g37 g39 g40 g61 g68 g71 g72 g73 g75 g77 g78 g80 g82 g84 g86 g88 g89 g90 g91 g92 g94 g96 g97 g98 g100 g100-a25 g100-a40 g100-a60 g100-a70 ok-d20 ' +
+    'ok-d22 ok-d54 ok-d55 ok-d63 ok-l60 ok-l76 warn-d15 warn-d17 warn-d19 warn-d20 warn-d39 warn-d48 warn-d61 warn-d94 warn-l40 warn-l61'
+  ).split(' ');
+
+  // ---- colour maths (sRGB <-> OKLab) -------------------------------------------------------
+  const hexRgb = h => { h = h.slice(1); if (h.length === 3) h = [...h].map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255); };
+  const lin = c => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const enc = c => { c = Math.max(0, Math.min(1, c)); return c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055; };
+  function toLab(hex) {
+    const [r, g, b] = hexRgb(hex).map(lin);
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+    return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+  }
+  function fromLab([L, A, B]) {
+    const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3, m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3, s = (L - 0.0894841775 * A - 1.291485548 * B) ** 3;
+    return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s].map(c => Math.round(enc(c) * 255));
+  }
+  const mix = (a, b, t) => fromLab(toLab(a).map((x, i) => x + (toLab(b)[i] - x) * t));
+  const hex = rgb => '#' + rgb.map(c => c.toString(16).padStart(2, '0')).join('');
+
+  /* The colour a token stands for in a theme, e.g. value(amber, 'g17') → '#233044'. */
+  function value(th, token) {
+    let m = /^g(\d+)(?:-a(\d+))?$/.exec(token), rgb;
+    if (m) rgb = mix(th.ink, th.paper, m[1] / 100);
+    else if ((m = /^(accent|warn|bad|ok)-([dl])(\d+)(?:-a(\d+))?$/.exec(token))) {
+      rgb = m[2] === 'd' ? mix(th.ink, th[m[1]], m[3] / 100) : mix(th[m[1]], th.paper, m[3] / 100);
+      m = [0, 0, m[4]];
+    } else throw new Error('Unknown colour token ' + token);
+    return m[2] ? `rgba(${rgb.join(',')},${m[2] / 100})` : hex(rgb);
+  }
+
+  const byId = id => THEMES.find(t => t.id === id);
+  const prefersLight = () => !!globalThis.matchMedia?.('(prefers-color-scheme: light)').matches;
+  const theme = {
+    THEMES, AUTO, TOKENS, value,
+    choice: 'amber', active: THEMES[0], cache: new Map(),
+    /* A token's colour in the active theme, for canvas drawing (cached). */
+    c(token) {
+      const k = this.active.id + ':' + token;
+      if (!this.cache.has(k)) this.cache.set(k, value(this.active, token));
+      return this.cache.get(k);
+    },
+    resolve(choice) { return choice === 'auto' ? byId(prefersLight() ? 'day' : 'amber') : byId(choice) || THEMES[0]; },
+    apply(choice = this.choice) {
+      this.choice = choice === 'auto' || byId(choice) ? choice : 'amber';
+      const th = this.active = this.resolve(this.choice), doc = globalThis.document;
+      if (!doc) return th;
+      const root = doc.documentElement;
+      root.dataset.theme = th.id;
+      root.style.colorScheme = th.scheme;
+      for (const k of ['accent', 'warn', 'bad', 'ok']) root.style.setProperty('--' + k, th[k]);
+      for (const t of TOKENS) root.style.setProperty('--' + t, value(th, t));
+      doc.querySelector('meta[name=theme-color]')?.setAttribute('content', value(th, 'g3'));
+      return th;
+    },
+    set(choice) {
+      this.apply(choice);
+      try { localStorage.setItem(KEY, this.choice); } catch (e) { /* storage blocked: lasts this visit */ }
+      globalThis.RF.app?.requestDraw?.();
+      globalThis.RF.app?.store && globalThis.RF.app.view?.drawMinimap?.(globalThis.document.getElementById('miniCanvas'));
+    }
+  };
+
+  // Apply the saved choice straight away, before the interface is built, so it never flashes.
+  try { theme.choice = localStorage.getItem(KEY) || 'amber'; } catch (e) { /* storage blocked */ }
+  theme.apply();
+  globalThis.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change', () => { if (theme.choice === 'auto') theme.set('auto'); });
+
+  RF.theme = theme;
 })(globalThis.RF = globalThis.RF || {});
 </script>
 <script data-rf>
@@ -1767,10 +1887,12 @@ globalThis.RF_ASSETS = { photos: {} };
 })(globalThis.RF = globalThis.RF || {});
 </script>
 <script data-rf>
-/* ROUTEFORM 0.2 — store.js
+/* ROUTEFORM 0.4 — store.js
  * Application state: the current project, derived index, undo/redo, revisions, photo bytes,
- * autosave (IndexedDB, falling back to localStorage) and on-wall progress sessions.
- * Photo image data lives outside the undo snapshots so history stays small. */
+ * the plans saved on this device (each autosaved to IndexedDB, falling back to localStorage)
+ * and on-wall progress sessions. Photo image data lives outside the undo snapshots so history stays small.
+ * Device plans: a small index in localStorage ("routeform.plans.v1": which plans exist and which is open)
+ * and one stored body per plan ("plan.<id>"). Up to 0.3.0 there was a single slot ("project"); app.js moves it over. The self-test sets `ns` so it never touches real plans. */
 (function (RF) {
   'use strict';
   const U = RF.util, S = RF.schema, W = RF.wall;
@@ -1800,8 +1922,18 @@ globalThis.RF_ASSETS = { photos: {} };
     async set(key, val) {
       const db = await this.open();
       return timeout(new Promise((resolve, reject) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(val, key); t.oncomplete = () => resolve(); t.onerror = () => reject(t.error); }), 8000);
+    },
+    async del(key) {
+      const db = await this.open();
+      return timeout(new Promise((resolve, reject) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').delete(key); t.oncomplete = () => resolve(); t.onerror = () => reject(t.error); }), 8000);
     }
   };
+  // Store one text under a key: IndexedDB, else localStorage, else localStorage without the photos.
+  async function writeText(key, json, withoutPhotos) {
+    try { await IDB.set(key, json); return 'saved'; } catch (e) { /* fall back */ }
+    try { localStorage.setItem('routeform.' + key, json); return 'saved'; } catch (e) { /* too big? */ }
+    try { localStorage.setItem('routeform.' + key, withoutPhotos()); return 'saved-no-photos'; } catch (e) { return 'failed'; }
+  }
 
   function defaultUi() {
     return {
@@ -1818,6 +1950,7 @@ globalThis.RF_ASSETS = { photos: {} };
       this.photoData = new Map(); this.images = new Map();
       this.undoStack = []; this.redoStack = []; this.listeners = new Set();
       this.ui = defaultUi(); this.readOnly = false; this.saveState = 'idle';
+      this.slotId = null; this.ns = ''; this.savedAt = null; this.saveTimer = null;
       this.progress = null; this.importedProgress = null;
       try {
         let saved = JSON.parse(localStorage.getItem(UI_KEY) || 'null');
@@ -1825,8 +1958,19 @@ globalThis.RF_ASSETS = { photos: {} };
         if (!saved) { saved = JSON.parse(localStorage.getItem(OLD_UI_KEY) || 'null'); if (saved?.layers) delete saved.layers.photo; }
         if (saved) this.ui = { ...this.ui, ...saved, layers: { ...this.ui.layers, ...(saved.layers || {}) }, selection: null };
       } catch (e) { /* storage blocked */ }
-      this.autosave = U.debounce(() => this.saveLocal(), 700);
     }
+    // Save shortly after each change; flushSave() saves a pending change now (app hidden, plan switched).
+    autosave() {
+      clearTimeout(this.saveTimer);
+      this.saveState = 'pending';
+      this.saveTimer = setTimeout(() => { this.saveTimer = null; this.saveLocal(); }, 700);
+    }
+    flushSave() {
+      if (this.saveTimer === null) return Promise.resolve();
+      clearTimeout(this.saveTimer); this.saveTimer = null;
+      return this.saveLocal();
+    }
+    cancelSave() { clearTimeout(this.saveTimer); this.saveTimer = null; }
     on(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
     emit(type, detail) { for (const fn of this.listeners) fn(type, detail); }
     saveUi() { try { const { selection, ...rest } = this.ui; localStorage.setItem(UI_KEY, JSON.stringify(rest)); } catch (e) { /* ignore */ } }
@@ -1937,21 +2081,98 @@ globalThis.RF_ASSETS = { photos: {} };
       return this.project.revision;
     }
 
-    // ---- autosave ---------------------------------------------------------------------
+    // ---- autosave & the plans on this device ---------------------------------------------
     async saveLocal() {
       if (!this.project) return;
-      const key = this.readOnly ? 'field-plan' : 'project';
-      const json = JSON.stringify(this.exportObject());
+      const json = JSON.stringify(this.exportObject()), small = () => JSON.stringify(this.exportObject({ embedPhotos: false }));
       this.saveState = 'saving';
-      try { await IDB.set(key, json); this.saveState = 'saved'; }
-      catch (e) {
-        try { localStorage.setItem('routeform.' + key, json); this.saveState = 'saved'; }
-        catch (e2) {
-          try { localStorage.setItem('routeform.' + key, JSON.stringify(this.exportObject({ embedPhotos: false }))); this.saveState = 'saved-no-photos'; }
-          catch (e3) { this.saveState = 'failed'; }
-        }
+      if (this.readOnly) {   // a read-only field copy keeps one cached plan, apart from the device plans
+        this.saveState = await writeText(this.ns + 'field-plan', json, small);
+        this.emit('saved', this.saveState);
+        return;
       }
-      this.emit('saved', this.saveState);
+      if (!this.slotId) this.slotId = U.uid('plan');
+      const slot = this.slotId, ns = this.ns, meta = this.planMeta(this.project);
+      let state = await writeText(ns + 'plan.' + slot, json, small);
+      if (state !== 'failed') {
+        const ix = this.plans(ns), now = U.nowIso();
+        let row = ix.plans.find(x => x.id === slot);
+        if (!row) ix.plans.push(row = { id: slot, createdAt: now, fileAt: null });
+        Object.assign(row, meta, { savedAt: now });
+        if (this.slotId === slot) ix.current = slot;
+        if (!this.writePlans(ix, ns)) state = 'failed';
+        else if (this.slotId === slot) this.savedAt = now;
+      }
+      if (this.slotId === slot && this.saveTimer === null) this.saveState = state;
+      this.emit('saved', state);
+    }
+    plansKey(ns = this.ns) { return 'routeform.' + ns + 'plans.v1'; }
+    /* { current, plans: [{ id, name, wall, projectId, holds, routes, revision, createdAt, savedAt, fileAt }] } */
+    plans(ns = this.ns) {
+      try { const ix = JSON.parse(localStorage.getItem(this.plansKey(ns)) || 'null'); if (ix && Array.isArray(ix.plans)) return ix; } catch (e) { /* blocked or damaged */ }
+      return { current: null, plans: [] };
+    }
+    writePlans(ix, ns = this.ns) { try { localStorage.setItem(this.plansKey(ns), JSON.stringify(ix)); return true; } catch (e) { return false; } }
+    planMeta(p) { return { name: p.name, wall: p.wall.name, projectId: p.projectId, holds: p.placements.length, routes: p.routes.length, revision: p.revision?.number ?? null }; }
+    /* Switch to a plan stored on this device. Returns the validation result ({ ok, errors }). */
+    async openPlan(id) {
+      await this.flushSave();
+      const text = await this.loadLocal(this.ns + 'plan.' + id);
+      if (!text) return { ok: false, errors: ['This plan is no longer stored on this device.'] };
+      const res = S.validateProject(text);
+      if (!res.ok) return res;
+      this.readOnly = false;
+      this.slotId = id;
+      this.load(res.project, { noSave: true });
+      this.savedAt = this.plans().plans.find(x => x.id === id)?.savedAt || null;
+      this.saveState = 'saved';
+      const ix = this.plans(); ix.current = id; this.writePlans(ix);
+      return res;
+    }
+    /* Open a project as a plan on this device: a new one, or in place of `replaceId`. The plan that was
+     * open stays saved. */
+    async addPlan(project, replaceId = null) {
+      await this.flushSave();
+      this.readOnly = false;
+      this.slotId = replaceId || U.uid('plan');
+      this.load(project, { noSave: true });
+      await this.saveLocal();
+      return this.slotId;
+    }
+    async deletePlan(id) {
+      if (id === this.slotId) { this.cancelSave(); this.slotId = null; }
+      const ix = this.plans();
+      ix.plans = ix.plans.filter(x => x.id !== id);
+      if (ix.current === id) ix.current = null;
+      this.writePlans(ix);
+      try { await IDB.del(this.ns + 'plan.' + id); } catch (e) { /* not in IndexedDB */ }
+      try { localStorage.removeItem('routeform.' + this.ns + 'plan.' + id); } catch (e) { /* blocked */ }
+    }
+    /* Change a stored plan without opening it (rename, copy). fn(project) edits the parsed JSON;
+     * with newId the result is stored as another plan. */
+    async editStoredPlan(id, fn, newId = null) {
+      if (id === this.slotId) await this.flushSave();
+      const text = await this.loadLocal(this.ns + 'plan.' + id);
+      if (!text) return false;
+      const p = JSON.parse(text);
+      fn(p);
+      const slot = newId || id;
+      if (await writeText(this.ns + 'plan.' + slot, JSON.stringify(p), () => JSON.stringify({ ...p, photos: p.photos.map(ph => ({ ...ph, dataUrl: null })) })) === 'failed') return false;
+      const ix = this.plans(), now = U.nowIso();
+      let row = ix.plans.find(x => x.id === slot);
+      if (!row) ix.plans.push(row = { id: slot, createdAt: now, fileAt: null });
+      Object.assign(row, this.planMeta(p), { savedAt: now });
+      return this.writePlans(ix);
+    }
+    async copyPlan(id) {
+      const copyId = U.uid('plan');
+      const ok = await this.editStoredPlan(id, p => { p.name = (p.name + ' (copy)').slice(0, 120); p.projectId = U.uid('project'); }, copyId);
+      return ok ? copyId : null;
+    }
+    /* The open plan was just written to a file (the plans list shows it as the last backup). */
+    markFileSaved() {
+      const ix = this.plans(), row = ix.plans.find(x => x.id === this.slotId);
+      if (row) { row.fileAt = U.nowIso(); this.writePlans(ix); }
     }
     async loadLocal(key = 'project') {
       let json = null;
@@ -1961,7 +2182,7 @@ globalThis.RF_ASSETS = { photos: {} };
     }
 
     // ---- on-wall progress (installation session) ------------------------------------
-    progressKey() { const p = this.project; return PROGRESS_KEY + p.projectId + '.' + (p.revision?.id || 'draft'); }
+    progressKey() { const p = this.project; return PROGRESS_KEY + this.ns + p.projectId + '.' + (p.revision?.id || 'draft'); }
     loadProgress() {
       const p = this.project;
       let sess = null;
@@ -2375,7 +2596,7 @@ globalThis.RF_ASSETS = { photos: {} };
  * The view never mutates the project; interaction results are delegated to the active mode handler. */
 (function (RF) {
   'use strict';
-  const U = RF.util, G = RF.geo, VM = RF.viewmath, W = RF.wall, C = RF.catalog;
+  const U = RF.util, G = RF.geo, VM = RF.viewmath, W = RF.wall, C = RF.catalog, TH = RF.theme;
   const MIN_S = 0.004, MAX_S = 6;
   const ROPE_COLORS = ['#4b6f9e', '#5e7f52', '#7b8088', '#4b6f9e', '#8a6b4f', '#5e7f52', '#7b8088'];
 
@@ -2456,7 +2677,7 @@ globalThis.RF_ASSETS = { photos: {} };
       if (!p || !idx) return;
       const v = this.v, s = v.s, field = ui.mode === 'field', survey = ui.mode === 'survey', L = ui.layers;
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-      ctx.fillStyle = field ? '#11161d' : '#151c26';
+      ctx.fillStyle = TH.c(field ? 'g3' : 'g6');   // around the wall: follows the colour scheme
       ctx.fillRect(0, 0, this.w, this.h);
       const WH = p.wall.height.value, WW = p.wall.modelWidth.value;
       const vis = this.visibleWallRect();
@@ -2775,8 +2996,8 @@ globalThis.RF_ASSETS = { photos: {} };
       const step = s > 0.25 ? 250 : s > 0.09 ? 500 : 1000;
       ctx.save();
       const bottom = this.app.store.ui.mode !== 'field';   // phone: height ruler only
-      ctx.fillStyle = 'rgba(14,18,25,.78)'; ctx.fillRect(0, 0, 34, this.h); if (bottom) ctx.fillRect(0, this.h - 20, this.w, 20);
-      ctx.font = '10px system-ui, sans-serif'; ctx.fillStyle = '#b7c4d4'; ctx.strokeStyle = '#6f7f93'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = TH.c('g1-a78'); ctx.fillRect(0, 0, 34, this.h); if (bottom) ctx.fillRect(0, this.h - 20, this.w, 20);
+      ctx.font = '10px system-ui, sans-serif'; ctx.fillStyle = TH.c('g80'); ctx.strokeStyle = TH.c('g52'); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
       const [, ytop] = this.toWall(0, 0), [, ybot] = this.toWall(0, this.h);
       for (let y = Math.max(0, Math.floor(ybot / step) * step); y <= Math.min(WH, ytop); y += step) {
         const [, sy] = this.toScreen(0, y);
@@ -2968,7 +3189,7 @@ globalThis.RF_ASSETS = { photos: {} };
       const T = (x, y) => VM.wallToScreen(mv, x, y);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, r.width, r.height);
-      ctx.fillStyle = 'rgba(14,18,25,.85)'; ctx.fillRect(0, 0, r.width, r.height);
+      ctx.fillStyle = TH.c('g1-a85'); ctx.fillRect(0, 0, r.width, r.height);
       ctx.fillStyle = '#dcdad4';
       for (const e of idx.panels.values()) { ctx.beginPath(); e.poly.forEach((q, i) => { const [a, b] = T(q[0], q[1]); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.fill(); }
       for (const pr of p.paint) { ctx.beginPath(); pr.polygon.forEach((q, i) => { const [a, b] = T(q[0], q[1]); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.fillStyle = pr.color; ctx.fill(); }
@@ -4126,7 +4347,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         ${pl.routeIds.length > 1 ? '<p class="hint">Shared hold: deliberately used by several routes.</p>' : ''}${!pl.routeIds.length ? '<p class="hint" style="color:var(--warn)">Not assigned to any route.</p>' : ''}</div>
       <div class="grid2"><div class="field"><label>Use</label><select id="hRole">${[['both', 'Hands + feet'], ['hands', 'Hands'], ['feet', 'Feet only']].map(([v, t]) => `<option value="${v}" ${pl.role === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
       <div class="field"><label>Marker</label><select id="hMark">${[['', 'None'], ['start', 'Start'], ['finish', 'Finish']].map(([v, t]) => `<option value="${v}" ${pl.marker === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
-      <div class="field"><label>Colour</label><div class="row"><input type="color" id="hColor" value="${pl.color || UI_routeColor(pl)}" style="width:60px;height:32px;border:1px solid #384a61;border-radius:6px;background:#0e1725"><span class="muted">${pl.color ? 'custom' : 'route colour'}</span>${pl.color ? '<button class="btn small" id="hColorReset">Use route colour</button>' : ''}</div></div>
+      <div class="field"><label>Colour</label><div class="row"><input type="color" id="hColor" value="${pl.color || UI_routeColor(pl)}" style="width:60px;height:32px;border:1px solid var(--g29);border-radius:6px;background:var(--g4)"><span class="muted">${pl.color ? 'custom' : 'route colour'}</span>${pl.color ? '<button class="btn small" id="hColorReset">Use route colour</button>' : ''}</div></div>
       <div class="field"><label>Notes (movement, orientation, setting)</label><textarea id="hNotes" maxlength="4000">${U.esc(pl.notes)}</textarea></div>
       ${prog ? `<div class="callout ${prog.state === 'installed' ? 'ok' : prog.state === 'needs_fix' ? 'bad' : ''}">Phone progress: <b>${U.esc(prog.state.replace('_', ' '))}</b>${prog.note ? ' — ' + U.esc(prog.note) : ''} <small>${U.esc(prog.at)}</small></div>` : ''}
       <div class="row"><button class="btn small" id="hZoom">Zoom to</button><button class="btn small" id="hDup">Duplicate (D)</button><button class="btn small danger" id="hDel">Delete</button></div>
@@ -4997,6 +5218,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     onStatus(msg) { this.msg = msg || ''; const el = $('pbMsg'); if (el) el.textContent = this.msg; },
     onProgress() { renderSheet(); if (ST().ui.fieldTab !== 'map') renderPage(); renderTop(); },
     onServer() { renderPage(); },
+    onSaved() { const el = $('saveNote'); if (el) el.outerHTML = saveNote(); },
+    loadPlanFile: () => loadPlanFile(),
     onKey(e) {
       const st = ST();
       if (climbing()) return;
@@ -5313,7 +5536,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     p.savedAt = U.nowIso();
     const name = `${U.slug(p.name)}-${p.savedAt.slice(0, 16).replace(/[-:]/g, '').replace('T', '-')}.routeform.json`;
     const how = await shareOrDownload(name, JSON.stringify(p, null, 1), 'application/json');
-    if (how !== 'cancelled') A().toast(`Project file ${how === 'shared' ? 'shared' : 'downloaded'}: ${name}. Open it on the computer with File → Open project.`, 'ok', 6500);
+    if (how === 'cancelled') return;
+    st.markFileSaved();
+    A().toast(`Project file ${how === 'shared' ? 'shared' : 'downloaded'}: ${name}. Open it on the computer with File → Open project.`, 'ok', 6500);
   }
 
   // Registered photos whose footprint contains this hold, with the hold's pixel position in each.
@@ -5375,16 +5600,23 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         <button class="btn danger bigbtn" id="resetProg">Reset progress on this device…</button>
         <p class="hint">Started ${U.esc(prog?.startedAt || '—')} · last change ${U.esc(prog?.updatedAt || '—')}</p></details>`;
   }
+  // "✓ Saved on this iPhone · just now" under the plan details (updated after every save).
+  function saveNote() {
+    const st = ST(), bad = st.saveState === 'failed' || st.saveState === 'saved-no-photos';
+    return `<p class="savenote ${bad ? 'bad' : ''}" id="saveNote" aria-live="polite">${bad ? '⚠' : st.saveState === 'saved' ? '✓' : '…'} ${U.esc(A().saveText())}</p>`;
+  }
   function morePage() {
-    const st = ST(), p = st.project, r = p.revision, prov = W.provenance(p, st.index), L = st.ui.layers;
+    const st = ST(), p = st.project, r = p.revision, prov = W.provenance(p, st.index), L = st.ui.layers, dev = A().deviceName();
     const H = p.wall.height.value, bands = [];
     for (let y = 0; y < H; y += 3000) bands.push(`<button class="btn" data-band="${y}" style="min-height:44px">${y / 1000}–${Math.min(H, y + 3000) / 1000} m</button>`);
     return `<h2>Plan</h2>
       <dl class="kv"><dt>Project</dt><dd>${U.esc(p.name)}${st.readOnly ? ' · read-only copy' : ''}</dd><dt>Revision</dt><dd>${r ? `${r.number} (${U.esc(r.id)}) · ${U.esc(r.createdAt)}${editable() && st.hasUnpublishedChanges() ? ' · <b>edited since</b>' : ''}` : 'unpublished draft'}</dd>
       <dt>Content</dt><dd class="mono">${U.esc(st.contentHash())}${r && r.contentHash !== st.contentHash() ? ' <span class="chip warn">differs from revision</span>' : ''}</dd>
       <dt>Wall</dt><dd>${U.esc(p.wall.name)}, ${U.esc(p.wall.facility)}</dd></dl>
-      ${editable() ? `<button class="btn primary bigbtn" id="newPlan">Other walls: ${RF.seed.walls.map(w => U.esc(w.name)).join(', ')}…</button>
-      <p class="hint" style="margin:-2px 0 0">Starts a new plan on the wall you pick. It replaces this plan, so save this one first (Files, below).</p>` : ''}
+      ${editable() ? `${saveNote()}
+      <button class="btn bigbtn" id="myPlans">Plans on this ${dev} (${st.plans().plans.length})</button>
+      <button class="btn primary bigbtn" id="newPlan">Other walls: ${RF.seed.walls.map(w => U.esc(w.name)).join(', ')}…</button>
+      <p class="hint" style="margin:-2px 0 0">Starts a new, empty plan on the wall you pick. This plan stays saved on the ${dev}.</p>` : ''}
       <div class="sep"></div>
       <h2>Calibration</h2>
       <p>${prov.allVerified ? 'All holds sit on field-verified holes.' : `<b>${prov.onEstimated} of ${prov.total}</b> holds use estimated positions. Sector width ${(p.sector.width.value / 1000).toFixed(2)} m is ${S.CONF[p.sector.width.confidence].label.toLowerCase()}.`}</p>
@@ -5396,6 +5628,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <div class="sep"></div>
       <h2>Layers</h2>
       ${[['photo', 'Photo underlay'], ['holes', 'Mounting holes'], ['fixtures', 'Fixed hardware (reference)'], ['ropes', 'Rope lines'], ['labels', 'Labels'], ['paint', 'Painted colour regions']].map(([k, t]) => `<label class="check" style="min-height:40px"><input type="checkbox" data-layer="${k}" ${L[k] ? 'checked' : ''}> ${t}</label>`).join('')}
+      <div class="sep"></div>
+      <h2>Colours</h2>
+      <div class="themes">${A().themeButtons()}</div>
       ${editable() ? `<div class="sep"></div>
       <h2>Routes</h2>
       <div class="list">${p.routes.map(rt => `<button class="li" data-editroute="${U.esc(rt.id)}"><span class="sw" style="background:${rt.color}"></span><span class="main"><b>${U.esc(rt.name)}</b><span>${U.esc(rt.grade || 'no grade')} · ${U.esc(rt.status)} · ${st.holdsOf(rt.id).length} holds</span></span><span class="st" aria-hidden="true">✎</span></button>`).join('') || '<p class="muted">No routes yet.</p>'}</div>
@@ -5403,10 +5638,11 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <div class="sep"></div>
       <h2>Files</h2>
       ${editable() ? `<button class="btn primary bigbtn" id="saveProj">Save project file (.json)</button>
-      <p class="hint" style="margin:-2px 0 10px">Everything, including edits made on this phone and the photos. Keep it in Google Drive or iCloud Drive and open it on the computer with File → Open project.${st.hasUnpublishedChanges() && p.revision ? ` <b>This plan has been edited since revision ${p.revision.number}.</b>` : ''}</p>`
+      <p class="hint" style="margin:-2px 0 10px">A copy of this plan outside the app, photos included: keep it in iCloud Drive or Google Drive as a backup, send it to someone, or open it on the computer with File → Open project.${st.hasUnpublishedChanges() && p.revision ? ` <b>This plan has been edited since revision ${p.revision.number}.</b>` : ''}</p>`
       : '<p class="hint" style="margin:-2px 0 10px">This offline copy is read-only. To edit on a phone, open the web version of ROUTEFORM and load this file there with <i>Load a plan file</i>.</p>'}
       <button class="btn bigbtn" id="dlOffline">Save offline copy of this plan (.html)</button>
       <button class="btn bigbtn" id="loadPlan">Load a plan file (.json / .html)…</button>
+      ${editable() ? `<p class="hint" style="margin:-2px 0 10px">A loaded file becomes one of the plans on this ${dev}; the plan that's open stays saved.</p>` : ''}
       ${!A().fieldOnly && window.innerWidth >= 760 ? '<button class="btn bigbtn" id="toEditor">Back to the editor</button>' : ''}
       <div class="callout bad">ROUTEFORM is a planning aid. It does not certify routes, holds, anchors or protection as safe. Follow the gym's procedures and the setter's judgement.</div>`;
   }
@@ -5443,6 +5679,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       el.querySelector('#dlOffline').addEventListener('click', () => RF.exporters.exportFieldHtml({ fromPhone: true }));
       el.querySelector('#loadPlan').addEventListener('click', loadPlanFile);
       el.querySelector('#newPlan')?.addEventListener('click', () => app.newPlanDialog());
+      el.querySelector('#myPlans')?.addEventListener('click', () => app.plansDialog());
+      app.wireThemeButtons(el);
       el.querySelector('#toEditor')?.addEventListener('click', () => app.setMode('route'));
     }
   }
@@ -5474,7 +5712,6 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   }
   async function loadPlanFile() {
     const app = A();
-    if (editable() && ST().undoStack.length && !(await app.confirm('Replace the plan on this phone?', '<p>Edits made here are lost unless you saved them with <i>Save project file</i>.</p>', 'Choose a file'))) return;
     const f = await app.pickFile('.json,.html,application/json,text/html');
     if (!f) return;
     let text = await U.readFile(f);
@@ -5486,6 +5723,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const res = S.validateProject(text);
     if (!res.ok) { app.toast('Plan rejected: ' + res.errors[0], 'bad', 8000); return; }
     const st = ST();
+    if (!app.fieldOnly) { app.importPlan(res.project); return; }   // the web app: one more plan on this device
+    // A read-only offline copy just shows the loaded plan instead.
     st.readOnly = false;
     st.load(res.project, { noSave: true });
     st.readOnly = app.fieldOnly;
@@ -5834,10 +6073,12 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 })(globalThis.RF = globalThis.RF || {});
 </script>
 <script data-rf>
-/* ROUTEFORM 0.2 — selftest.js
+/* ROUTEFORM 0.4 — selftest.js
  * Scripted UI acceptance test. Open the app with ?selftest=1 (desktop or phone). It works on a
  * fresh copy of the seed, drives the real canvas with synthetic pointer events, prints a report,
- * and then restores the project that was open before. Nothing is downloaded or uploaded. */
+ * and then restores the project that was open before. Nothing is downloaded or uploaded.
+ * Its plans and checklist marks live in a separate storage area ("selftest."), deleted afterwards,
+ * so the plans saved on the device are never touched. */
 (function (RF) {
   'use strict';
   const U = RF.util, W = RF.wall, S = RF.schema;
@@ -5852,7 +6093,10 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   async function run() {
     const app = RF.app, st = app.store, cv = document.getElementById('wallCanvas'), results = [];
     const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail });
-    const saved = st.exportObject(), savedMode = st.ui.mode, wasRO = st.readOnly;
+    const saved = st.exportObject(), savedMode = st.ui.mode, wasRO = st.readOnly, savedTheme = RF.theme.choice;
+    await st.flushSave();
+    const real = { slotId: st.slotId, ns: st.ns, saveState: st.saveState, savedAt: st.savedAt };
+    st.ns = 'selftest.'; st.slotId = null;
     try {
       st.readOnly = false;
       st.load(RF.seed.createGraveggenSeed(), { noSave: true });
@@ -5931,16 +6175,19 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       check('Save/load round trip validates and keeps every hold', res.ok && res.project.placements.length === st.project.placements.length && S.contentHash(res.project) === st.contentHash());
       check('Malformed project is rejected atomically', !S.validateProject('{"schema":"routeform.project","panels":"x"}').ok && st.project.placements.length > 0);
 
-      // New plan on another wall: the Galleriet draft replaces the plan, and undo brings the old one back.
-      const hashBeforeNew = st.contentHash(), newPlan = app.newPlanDialog(); await wait(50);
+      // New plan on another wall: the Galleriet draft opens as a second plan on the device, and the first
+      // plan stays saved and opens again unchanged.
+      st.cancelSave(); await st.saveLocal();
+      const firstSlot = st.slotId, hashBeforeNew = st.contentHash(), newPlan = app.newPlanDialog(); await wait(50);
       document.querySelector('.modal [data-wall="galleriet"]').click(); await newPlan; await wait(50);
       const gp = st.project, gLines = gp.fixtures.filter(f => f.kind === 'rope_line').length, gHoles = st.index.count;
       const gOk = gp.wall.name === 'Galleriet' && gLines === 10 && !gp.routes.length && !gp.photos.length && gHoles > 1000;
-      st.undo();
-      check('New plan: Galleriet draft (10 lines, no routes or photos); undo brings the old plan back', gOk && st.contentHash() === hashBeforeNew, `${gHoles} holes`);
+      const ix1 = st.plans(), twoPlans = ix1.plans.length === 2 && ix1.current === st.slotId && st.slotId !== firstSlot;
+      await app.switchPlan(firstSlot);
+      check('New plan: Galleriet draft (10 lines, no routes or photos) opens as a second plan; the first stays saved and opens unchanged', gOk && twoPlans && st.slotId === firstSlot && st.contentHash() === hashBeforeNew, `${gHoles} holes · ${ix1.plans.length} plans`);
 
       // Hovedveggen has no hole map: a hold goes where you tap and is described from the nearest quickdraw.
-      const hashBeforeHov = st.contentHash(), newPlanH = app.newPlanDialog(); await wait(50);
+      const newPlanH = app.newPlanDialog(); await wait(50);
       document.querySelector('.modal [data-wall="hovedveggen"]').click(); await newPlanH; await wait(50);
       RF.routeEdit.addRoute(); st.ui.catalogId = 'cat-jug';
       const qd = st.project.fixtures.find(f => f.label === 'L3·5');
@@ -5949,8 +6196,26 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       RF.routeEdit.placeNew(RF.routeEdit.targetFor(st.catalogItem('cat-jug'), qx2, qy2, null));
       const hpl = st.project.placements[0], hm = hpl && RF.ui.describeMount(st, hpl);
       const hOk = st.index.count === 0 && hpl && !hpl.holeId && hm.code === 'Near L3·5' && /40 cm to the right of quickdraw L3·5 \(line L3, 5th from the floor\) and 20 cm above it/.test(hm.countText);
-      st.undo(); st.undo(); st.undo();
-      check('Hovedveggen draft: a hold goes where you tap and is described from the nearest quickdraw', hOk && st.contentHash() === hashBeforeHov, hm ? hm.countText : 'not placed');
+      await app.switchPlan(firstSlot);
+      check('Hovedveggen draft: a hold goes where you tap and is described from the nearest quickdraw', hOk && st.contentHash() === hashBeforeNew, hm ? hm.countText : 'not placed');
+
+      // Plans dialog: lists the three plans; Delete needs a second tap and removes the stored plan.
+      const pd = app.plansDialog(); await wait(80);
+      const planRows = [...document.querySelectorAll('.modal [data-plan]')], vid = planRows.find(r => r.dataset.plan !== st.slotId)?.dataset.plan;
+      document.querySelector(`.modal [data-plan="${vid}"] [data-pact="del"]`).click(); await wait(30);
+      const stillThere = st.plans().plans.length === 3;
+      document.querySelector(`.modal [data-plan="${vid}"] [data-pact="del"]`).click(); await wait(100);
+      const nAfter = st.plans().plans.length, bodyGone = !(await st.loadLocal(st.ns + 'plan.' + vid)) && !document.querySelector(`.modal [data-plan="${vid}"]`);
+      document.querySelector('.modal footer .btn').click(); await pd;
+      check('Plans on this device: the list shows every plan; Delete asks for a second tap, then removes the stored plan', planRows.length === 3 && stillThere && nAfter === 2 && bodyGone && st.slotId === firstSlot, `${planRows.length} → ${nAfter}`);
+
+      // Autosave: a pending change is written as soon as the page is hidden (iPhone app switch), not only after the delay.
+      st.commit('Self-test rename', p => { p.name += ' ·'; });
+      const pendingBefore = st.saveTimer !== null;
+      window.dispatchEvent(new Event('pagehide')); await wait(200);
+      const storedNow = JSON.parse((await st.loadLocal(st.ns + 'plan.' + st.slotId)) || '{}');
+      check('Autosave: a pending change is stored as soon as the page is hidden', pendingBefore && storedNow.name === st.project.name && st.saveTimer === null && st.saveState === 'saved', st.saveState);
+      st.undo();
 
       // Phone view: tap a hold, bottom sheet shows the hole reference.
       app.setMode('field'); await wait(250);
@@ -6044,6 +6309,15 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       q('#shMore').click(); await wait(30);
       for (const tab of ['list', 'more', 'map']) { q(`[data-ft="${tab}"]`).click(); await wait(50); if (tab !== 'map') sizes.push(fsz(q('#findInput'))); }
       check('Phone: text fields are 16 px or larger, so iPhone Safari does not zoom in', sizes.every(z => z >= 16), sizes.join(' / ') + ' px');
+      // Colour schemes (More → Colours): Daylight turns the interface light, Amber brings the original back.
+      const bgSum = () => getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).reduce((a, b) => a + +b, 0) / 3;
+      q('[data-ft="more"]').click(); await wait(50);
+      q('#fieldPage [data-theme-pick="day"]').click(); await wait(30);
+      const dayBg = bgSum(), dayOn = q('#fieldPage [data-theme-pick="day"]').classList.contains('on'), dayScheme = document.documentElement.style.colorScheme;
+      q('#fieldPage [data-theme-pick="amber"]').click(); await wait(30);
+      const amberBg = bgSum();
+      q('[data-ft="map"]').click(); await wait(30);
+      check('Colour schemes: Daylight turns the interface light; Amber brings back the original dark colours', dayBg > 200 && dayOn && dayScheme === 'light' && amberBg < 30 && RF.theme.choice === 'amber', `background ${Math.round(dayBg)} → ${Math.round(amberBg)}`);
       st.progress.items = {}; st.saveProgress();
 
       // Offline field file boots (only when the app code is inline, i.e. the built single file).
@@ -6062,9 +6336,16 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     } catch (e) {
       check('Self-test crashed', false, e.stack || e.message);
     } finally {
+      // Remove everything the test stored, then go back to the real plan.
+      st.cancelSave();
+      try { for (const x of st.plans().plans) await st.deletePlan(x.id); localStorage.removeItem(st.plansKey()); } catch (e) { /* storage blocked */ }
+      try { for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k && k.includes('.selftest.')) localStorage.removeItem(k); } } catch (e) { /* storage blocked */ }
+      Object.assign(st, { ns: real.ns, slotId: real.slotId });
+      RF.theme.set(savedTheme);
       const res = S.validateProject(saved);
       st.readOnly = false;
       if (res.ok) st.load(res.project, { noSave: true });
+      st.saveState = real.saveState; st.savedAt = real.savedAt;
       st.readOnly = wasRO;
       app.setMode(savedMode);
       app.view.fitSector();
@@ -6121,6 +6402,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   <div class="top-actions">
     <button class="btn subtle icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
     <button class="btn subtle icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+    <span id="saveInd" class="save-ind" aria-live="polite"></span>
     <span id="revChip" class="chip" title="Project revision"></span>
     <button class="btn" id="fileBtn" aria-haspopup="menu">File ▾</button>
     <button class="btn primary" id="shareBtn">Send to phone ↗</button>
@@ -6221,8 +6503,11 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const chip = $('revChip');
     chip.className = 'chip ' + (dirty ? 'warn' : 'ok');
     chip.textContent = r ? `Rev ${r.number}${dirty ? ' · unpublished edits' : ' · published'}` : 'Draft · no revision yet';
-    const saved = { saving: 'saving…', saved: 'autosaved', 'saved-no-photos': 'autosaved without photos', failed: 'autosave failed — export JSON', idle: '' }[st.saveState];
-    chip.title = 'Project revision. The phone export always carries a specific revision. Browser ' + saved + '. The exported JSON file is the source of truth.';
+    chip.title = `Project revision. The phone export always carries a specific revision. ${app.saveText()}. File → Save project keeps a copy outside this browser.`;
+    const ind = $('saveInd');
+    ind.textContent = st.readOnly ? '' : { pending: 'Saving…', saving: 'Saving…', saved: '✓ Saved', 'saved-no-photos': '✓ Saved (no photos)', failed: '⚠ Not saved', idle: '' }[st.saveState] || '';
+    ind.className = 'save-ind ' + (st.saveState === 'failed' ? 'bad' : '');
+    ind.title = app.saveText();
   };
   app.renderRibbon = () => {
     const st = app.store, p = st.project, pr = W.provenance(p, st.index), el = $('ribbon');
@@ -6321,31 +6606,171 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const ok = await app.confirm('Open with warnings?', `<p>The file is valid but has ${res.warnings.length} warning(s):</p><ul>${res.warnings.slice(0, 25).map(w => `<li>${U.esc(w)}</li>`).join('')}</ul>`, 'Open anyway');
       if (!ok) return false;
     }
-    app.store.load(res.project);
-    app.view.fitSector();
-    app.renderPanels();
-    app.toast(`Opened "${res.project.name}".`, 'ok');
-    return true;
+    return app.importPlan(res.project);
   };
   app.openProject = async () => {
     const f = await app.pickFile('.json,application/json');
     if (!f) return;
     if (f.size > 80e6) return app.toast('File is larger than 80 MB.', 'bad');
-    if (app.store.undoStack.length && !(await app.confirm('Replace current project?', '<p>The open project will be replaced. Export it first if you need it (File → Save project).</p>', 'Open file'))) return;
     app.loadProjectText(await U.readFile(f), f.name);
   };
   app.saveProject = () => {
     const p = app.store.exportObject();
     p.savedAt = U.nowIso();
     U.download(`${U.slug(p.name)}.routeform.json`, JSON.stringify(p, null, 1), 'application/json');
-    app.toast('Project JSON downloaded. Keep this file: it is the source of truth.', 'ok');
+    app.store.markFileSaved();
+    app.toast('Project file downloaded. Keep it somewhere safe: it is a copy outside this browser.', 'ok');
   };
+
+  // ---- plans on this device ----------------------------------------------------------------------
+  const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const homeScreenApp = () => navigator.standalone === true || !!window.matchMedia?.('(display-mode: standalone)').matches;
+  app.deviceName = () => (/iPad/.test(navigator.userAgent) || (isIos() && !/iPhone|iPod/.test(navigator.userAgent)) ? 'iPad'
+    : isIos() ? 'iPhone' : /Android|Mobile/.test(navigator.userAgent) ? 'phone' : 'computer');
+  app.when = iso => {
+    if (!iso) return 'never';
+    const d = new Date(iso), now = new Date(), sec = (now - d) / 1000, hm = d.toTimeString().slice(0, 5);
+    if (sec < 50) return 'just now';
+    if (sec < 3600) return Math.round(sec / 60) + ' min ago';
+    if (d.toDateString() === now.toDateString()) return 'today ' + hm;
+    if (d.toDateString() === new Date(now - 864e5).toDateString()) return 'yesterday ' + hm;
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) });
+  };
+  app.saveText = () => {
+    const st = app.store, dev = app.deviceName();
+    if (st.readOnly) return 'Read-only copy';
+    return { pending: 'Saving…', saving: 'Saving…', saved: `Saved on this ${dev} ${app.when(st.savedAt)}`, 'saved-no-photos': `Saved on this ${dev} without the photos (not enough space)`,
+      failed: `Not saved on this ${dev}: its storage is full or blocked. Save a file to keep your changes`, idle: '' }[st.saveState] || '';
+  };
+  // How safe the stored plans are here, in plain words (Safari clears unused sites' data; Home Screen apps keep it).
+  app.storageNote = async () => {
+    const dev = app.deviceName();
+    let kept = false;
+    try { kept = !!(await navigator.storage?.persisted?.()); } catch (e) { /* unknown */ }
+    if (homeScreenApp() && isIos()) return `Kept on this ${dev} until you delete them or remove ROUTEFORM from the Home Screen. (The Home Screen app and Safari keep separate plans.)`;
+    if (kept || homeScreenApp()) return `This browser has agreed to keep these plans on this ${dev}. Clearing the browser's website data would still delete them.`;
+    if (isIos()) return 'Safari can delete a website\'s saved data if you use Safari for a week without opening it. To keep plans safe, use ROUTEFORM from the Home Screen (Share → Add to Home Screen) and save a file now and then. The Home Screen app and Safari keep separate plans.';
+    return `The browser can delete saved website data when space runs low or when browsing data is cleared. Save a file now and then to be safe.`;
+  };
+  app.afterPlanChange = msg => {
+    const st = app.store;
+    st.ui.selection = null; st.ui.fieldTab = 'map'; st.ui.fieldRoute = 'all';
+    renderBands();
+    app.view.fitSector();
+    app.renderPanels();
+    if (msg) app.toast(msg, 'ok');
+  };
+  app.switchPlan = async id => {
+    app.climb?.close();
+    const res = await app.store.openPlan(id);
+    if (!res.ok) { app.toast('Could not open that plan: ' + res.errors[0], 'bad', 8000); return false; }
+    app.afterPlanChange(`Opened "${res.project.name}".`);
+    return true;
+  };
+  /* A project from a file becomes a plan on this device. If the same plan is already stored here,
+   * ask whether the file replaces it or both are kept. */
+  app.importPlan = async project => {
+    const st = app.store, dev = app.deviceName(), same = st.plans().plans.find(x => x.projectId === project.projectId);
+    let replaceId = null;
+    if (same) {
+      const r = await app.modal({ title: `Already on this ${dev}`, html: `
+        <p><b>${U.esc(same.name)}</b> (saved ${U.esc(app.when(same.savedAt))}) is the same plan as this file. Replace it with the file, or keep both?</p>
+        <p class="hint">Replacing loses any changes made on this ${dev} since the file was saved.</p>`,
+        buttons: [{ label: 'Cancel', value: null }, { label: 'Keep both', value: 'both' }, { label: 'Replace', value: 'replace', kind: 'primary' }] });
+      if (!r.value) return false;
+      if (r.value === 'replace') replaceId = same.id;
+    }
+    app.climb?.close();
+    await st.addPlan(project, replaceId);
+    app.afterPlanChange(replaceId ? `Opened "${project.name}" from the file.` : `Opened "${project.name}". It's now one of the plans on this ${dev}.`);
+    return true;
+  };
+  app.plansDialog = async () => {
+    const st = app.store, dev = app.deviceName();
+    await st.flushSave();
+    const note = await app.storageNote();
+    let renaming = null, deleting = null;
+    const rows = () => {
+      const list = [...st.plans().plans].sort((a, b) => (b.id === st.slotId) - (a.id === st.slotId) || String(b.savedAt).localeCompare(String(a.savedAt)));
+      return list.map(x => {
+        const open = x.id === st.slotId;
+        const head = renaming === x.id
+          ? `<div class="plan-rename"><input id="plName" value="${U.esc(x.name)}" maxlength="120" aria-label="Plan name" autocomplete="off"><button type="button" class="btn primary" data-pact="saveName">Save</button></div>`
+          : `<button type="button" class="plan-main" data-pact="open" ${open ? 'aria-current="true"' : ''}><b>${U.esc(x.name)}</b>
+             <span>${U.esc(x.wall)} · ${x.routes} route${x.routes === 1 ? '' : 's'} · ${x.holds} hold${x.holds === 1 ? '' : 's'}${x.revision ? ' · rev ' + x.revision : ''}</span>
+             <span>Saved ${U.esc(app.when(x.savedAt))} · file: ${U.esc(x.fileAt ? app.when(x.fileAt) : 'none yet')}</span></button>`;
+        return `<div class="plan ${open ? 'open' : ''}" data-plan="${U.esc(x.id)}">${head}
+          <div class="plan-acts">${open ? '<span class="chip ok">Open now</span>' : '<button type="button" class="btn small primary" data-pact="open">Open</button>'}
+          <button type="button" class="btn small" data-pact="rename">Rename</button><button type="button" class="btn small" data-pact="copy">Copy</button>
+          <button type="button" class="btn small danger" data-pact="del">${deleting === x.id ? 'Delete for good?' : 'Delete'}</button></div></div>`;
+      }).join('') || '<p class="muted">No plans saved yet.</p>';
+    };
+    const res = await app.modal({ title: `Plans on this ${dev}`, wide: true, html: `
+      <p>Every change is saved on this ${dev} by itself, a moment after you make it. Tap a plan to open it; the one you leave stays saved.</p>
+      <div class="plans" id="planRows">${rows()}</div>
+      <p class="hint" id="storageNote">${U.esc(note)}</p>`,
+      buttons: [{ label: 'Close', value: null }, { label: 'Open a plan file…', value: { file: true } }, { label: '＋ New plan…', value: { add: true }, kind: 'primary' }],
+      onOpen: (box, done) => {
+        const list = box.querySelector('#planRows');
+        const redraw = () => { list.innerHTML = rows(); list.querySelector('#plName')?.focus(); };
+        list.addEventListener('click', async e => {
+          const b = e.target.closest('[data-pact]'), row = b?.closest('[data-plan]');
+          if (!b || !row) return;
+          const id = row.dataset.plan, act = b.dataset.pact;
+          if (act !== 'del') deleting = null;
+          if (act === 'open') { if (id !== st.slotId) done({ open: id }); return; }
+          if (act === 'rename') { renaming = id; redraw(); return; }
+          if (act === 'saveName') {
+            const name = (list.querySelector('#plName').value.trim() || 'Untitled plan').slice(0, 120);
+            if (id === st.slotId) { st.commit('Rename plan', p => { p.name = name; }); await st.flushSave(); }
+            else await st.editStoredPlan(id, p => { p.name = name; });
+            renaming = null; redraw(); return;
+          }
+          if (act === 'copy') { const c = await st.copyPlan(id); app.toast(c ? 'Copy saved on this ' + dev + '.' : 'Could not make a copy (storage full?).', c ? 'ok' : 'bad'); redraw(); return; }
+          if (act === 'del') {
+            if (deleting !== id) { deleting = id; redraw(); return; }
+            deleting = null;
+            const wasOpen = id === st.slotId;
+            await st.deletePlan(id);
+            if (wasOpen) {
+              const next = [...st.plans().plans].sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)))[0];
+              if (!(next && await app.switchPlan(next.id))) { await st.addPlan(RF.seed.createGraveggenSeed()); app.afterPlanChange('Started again from the Gråveggen demo plan.'); }
+            }
+            redraw();
+          }
+        });
+        list.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'plName') list.querySelector('[data-pact="saveName"]')?.click(); });
+      } });
+    if (res.value?.open) await app.switchPlan(res.value.open);
+    else if (res.value?.add) app.newPlanDialog();
+    else if (res.value?.file) (st.ui.mode === 'field' ? RF.modes.field?.loadPlanFile?.() : app.openProject());
+  };
+
+  // ---- colour scheme ----------------------------------------------------------------------------
+  app.themeButtons = () => {
+    const T = RF.theme, A0 = T.THEMES[0], D = T.THEMES.find(t => t.id === 'day');
+    const half = (a, b) => `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+    return [T.AUTO, ...T.THEMES].map(t => {
+      const auto = t.id === 'auto', on = T.choice === t.id;
+      return `<button type="button" class="${on ? 'on' : ''}" data-theme-pick="${t.id}" aria-pressed="${on}">
+        <span class="tp" style="background:${auto ? half(A0.ink, D.ink) : t.ink}"><em style="background:${auto ? half(A0.paper, D.paper) : t.paper}"></em><i style="background:${auto ? half(A0.accent, D.accent) : t.accent}"></i></span>
+        <span class="main"><b>${U.esc(t.name)}</b><span>${U.esc(t.note)}</span></span></button>`;
+    }).join('');
+  };
+  app.wireThemeButtons = root => root.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => {
+    RF.theme.set(b.dataset.themePick);
+    root.querySelectorAll('[data-theme-pick]').forEach(x => { const on = x.dataset.themePick === RF.theme.choice; x.classList.toggle('on', on); x.setAttribute('aria-pressed', String(on)); });
+  }));
+  app.themeDialog = () => app.modal({ title: 'Colour scheme', wide: true,
+    html: `<div class="themes">${app.themeButtons()}</div><p class="hint">Only changes how ROUTEFORM looks on this ${app.deviceName()}. Route and hold colours stay the same.</p>`,
+    onOpen: box => app.wireThemeButtons(box) });
 
   function fileMenu(anchor) {
     const E = RF.exporters, ro = app.store.readOnly;
     app.menu(anchor, [
-      { label: 'Open project / import JSON (v0.2 or v0.1)…', run: app.openProject, disabled: ro },
-      { label: 'Save project (.json, includes photos)', run: app.saveProject },
+      { label: `Plans on this ${app.deviceName()}…`, run: app.plansDialog, disabled: ro },
+      { label: 'Open a project file (.json, v0.2 or v0.1)…', run: app.openProject, disabled: ro },
+      { label: 'Save project file (.json, includes photos)', run: app.saveProject },
       { label: 'Import on-wall progress from phone (.json)…', run: () => E.importProgress() },
       '-',
       { label: 'Export PNG wall overview', run: () => E.exportPng() },
@@ -6355,6 +6780,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       '-',
       { label: 'Publish revision (freeze for phone)…', run: () => E.publishRevisionDialog(), disabled: ro },
       { label: `Other walls: new plan on ${RF.seed.walls.map(w => w.name).join(', ')}…`, run: app.newPlanDialog, disabled: ro },
+      '-',
+      { label: 'Colour scheme…', run: app.themeDialog },
       { label: 'About, limitations & keyboard shortcuts', run: about }
     ]);
   }
@@ -6362,20 +6789,18 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   app.newPlanDialog = async () => {
     const st = app.store, walls = RF.seed.walls;
     const res = await app.modal({ title: 'New plan', html: `
-      <p>Start a new plan on one of these walls. It replaces the plan that's open now, so save that first if you want to keep it. Undo brings it back until you close the page.</p>
+      <p>Start a new, empty plan on one of these walls. The plan that's open now stays saved on this ${app.deviceName()} (find it again under <i>Plans on this ${app.deviceName()}</i>).</p>
       <div class="list">${walls.map(w => `<button type="button" class="li" data-wall="${U.esc(w.id)}"><span class="main"><b>${U.esc(w.name)}</b><span>${U.esc(w.summary)}</span></span></button>`).join('')}</div>`,
       buttons: [{ label: 'Cancel', value: null }],
       onOpen: (box, done) => box.querySelectorAll('[data-wall]').forEach(b => b.addEventListener('click', () => done(b.dataset.wall))) });
     const wall = walls.find(w => w.id === res.value);
     if (!wall || st.readOnly) return;
     const p = wall.create();
-    for (const ph of p.photos) if (ph.dataUrl) { st.photoData.set(ph.id, ph.dataUrl); ph.dataRef = ph.id; ph.dataUrl = null; }
-    st.ui.selection = null; st.ui.fieldTab = 'map'; st.ui.fieldRoute = 'all';
-    st.replace('New plan: ' + wall.name, p);
-    st.decodePhotos();
-    app.view.fitSector();
-    app.renderPanels();
-    app.toast(`New plan on ${wall.name}. Its wall geometry is a placeholder, not measured.`, 'warn', 6000);
+    p.projectId = U.uid('project');   // each new plan is its own project, even on the same wall
+    app.climb?.close();
+    await st.addPlan(p);
+    app.afterPlanChange();
+    app.toast(`New plan on ${wall.name}. The plan you had open is still saved. Its wall geometry is a placeholder, not measured.`, 'warn', 7000);
   };
   function about() {
     app.modal({ title: 'ROUTEFORM 0.2 — Vulkan routesetting planning aid', wide: true, html: `
@@ -6427,13 +6852,19 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         if (res && res.ok) { app.fieldOnly = true; st.readOnly = true; st.load(res.project, { noSave: true }); return 'cache'; }
       }
     }
-    const saved = await st.loadLocal('project');
-    if (saved) {
-      const res = S.validateProject(saved);
-      if (res.ok) { st.load(res.project, { noSave: true }); return 'autosave'; }
-      app.toast('The autosaved project could not be read; starting from the seed. (' + res.errors[0] + ')', 'warn', 9000);
+    // Plans on this device: open the one that was open last, else the most recently saved one.
+    const ix = st.plans(), bySaved = [...ix.plans].sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
+    for (const id of [...new Set([ix.current, ...bySaved.map(x => x.id)])].filter(Boolean)) {
+      if ((await st.openPlan(id)).ok) return 'autosave';
     }
-    st.load(RF.seed.createGraveggenSeed());
+    if (ix.plans.length) app.toast('None of the plans stored on this device could be read; starting from the demo plan.', 'warn', 9000);
+    else {
+      // Up to 0.3.0 there was a single autosaved project; it becomes the first plan on the device.
+      const legacy = await st.loadLocal('project'), res = legacy && S.validateProject(legacy);
+      if (res?.ok) { await st.addPlan(res.project); return 'autosave'; }
+      if (res) app.toast('The autosaved project could not be read; starting from the seed. (' + res.errors[0] + ')', 'warn', 9000);
+    }
+    await st.addPlan(RF.seed.createGraveggenSeed());
     return 'seed';
   }
 
@@ -6442,12 +6873,22 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const st = app.store;
     app.view = new RF.WallView($('wallCanvas'), app);
     const source = await loadInitialProject();
+    let keepAsked = false;
     st.on((type, detail) => {
       if (type === 'change' || type === 'load') { app.renderPanels(); app.requestDraw(); }
       else if (type === 'photo') { app.view.warpCache.delete(detail); app.requestDraw(); app.mode()?.onPhoto?.(detail); }
       else if (type === 'warn') app.toast(detail, 'warn');
-      else if (type === 'saved') app.renderTop();
+      else if (type === 'saved') {
+        app.renderTop(); app.mode()?.onSaved?.(detail);
+        if ((detail === 'failed' || detail === 'saved-no-photos') && app.saveWarned !== detail) {
+          app.saveWarned = detail;
+          app.toast(detail === 'failed' ? `Couldn't save on this ${app.deviceName()}: its storage is full or blocked. Save a file to keep your changes.`
+            : `Saved on this ${app.deviceName()} without the photos (not enough space). Save a file to keep them.`, 'bad', 9000);
+        }
+      }
       else if (type === 'progress') { app.requestDraw(); app.mode()?.onProgress?.(); }
+      // After the first edit, ask the browser to keep this site's storage (no prompt in Safari or Chrome).
+      if (type === 'change' && !keepAsked && !st.readOnly) { keepAsked = true; navigator.storage?.persisted?.().then(k => k || navigator.storage.persist()).catch(() => {}); }
     });
     document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => app.setMode(b.dataset.mode)));
     $('undoBtn').addEventListener('click', () => st.undo());
@@ -6469,7 +6910,12 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     });
     wireHud(); renderBands();
     new ResizeObserver(() => app.view.resize()).observe($('stage'));
-    window.addEventListener('beforeunload', () => { if (st.saveState === 'saving') st.saveLocal(); });
+    // Save a pending change straight away when the app goes to the background or closes: iPhones often
+    // suspend or end a backgrounded page without warning.
+    const flush = () => { st.flushSave(); };
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
 
     const params = new URLSearchParams(location.search);
     let mode = app.fieldOnly || params.get('mode') === 'field' || window.innerWidth < 760 ? 'field' : (st.ui.mode || 'route');
