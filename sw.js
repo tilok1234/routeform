@@ -1,6 +1,6 @@
 /* ROUTEFORM 0.2 service worker — only active when the app is hosted over HTTPS (or localhost).
  * Network-first for the app shell so updates arrive when online; cached copy when offline.
- * API calls (LAN publish) are never cached. Build: 2026-11-03T19:33:50.386Z */
+ * API calls (LAN publish) are never cached. Build: 2026-11-03T19:36:01.597Z */
 const CACHE = 'routeform-__BUILD__';
 const SHELL = ['./', './routeform.html', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
