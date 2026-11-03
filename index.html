@@ -243,6 +243,7 @@ body.field .field-page[data-open=true]{display:block;position:absolute;inset:0;z
 .progfile summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer;color:#c3d2e4}
 .pb-deg{flex:none;min-width:34px;text-align:center;font-weight:700}
 #pbMsg:empty{display:none}
+.mv-follow{min-height:44px;font-size:14px}
 .rotglyph{display:inline-flex;width:44px;height:44px;border-radius:50%;border:2px solid #7d93b1;align-items:center;justify-content:center;font-size:22px;flex:0 0 44px}
 .list{display:grid;gap:6px}
 .li{display:flex;align-items:center;gap:10px;min-height:56px;padding:6px 10px;border-radius:10px;border:1px solid #2f4056;background:#162131;text-align:left;width:100%}
@@ -295,7 +296,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-03T17:10:16.135Z">
+<meta name="routeform-build" content="2026-11-03T17:16:29.443Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1801,7 +1802,8 @@ globalThis.RF_ASSETS = { photos: {} };
     return {
       mode: 'route', tool: 'select', surveyTool: 'select', catalogId: 'cat-jug', activeRouteId: null, display: 'all', hiddenRoutes: [],
       layers: { paint: true, photo: false, seams: true, holes: true, fixtures: true, ropes: true, labels: true, outside: true, progress: true, confidence: false },
-      selection: null, fieldRoute: 'all', fieldSort: 'up', fieldTab: 'map', fieldTool: 'select', placeRotation: 0
+      selection: null, fieldRoute: 'all', fieldSort: 'up', fieldTab: 'map', fieldTool: 'select', placeRotation: 0,
+      followNudge: true   // arrows / arrow keys: pan the view so the moved hold stays on screen
     };
   }
 
@@ -3812,11 +3814,25 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     app.status(`${pl.label} → ${t.screw ? t.panel.id : t.hole.id}`);
   }
   function rotate(pl, d) { ST().commit(`Rotate ${pl.label}`, p => { const q = p.placements.find(x => x.id === pl.id); q.rotation = U.normDeg(q.rotation + d); }); }
+  /* With "follow" on, pan (never zoom) just enough that a hold moved with the arrows stays clear of the
+   * screen edges, the phone's tool buttons and the bottom sheet. */
+  function followHold(id) {
+    const st = ST(), view = A().view, pl = st.placement(id), pos = pl && W.placementPosition(st.index, pl);
+    if (st.ui.followNudge === false || !pos?.ok) return;
+    const phone = st.ui.mode === 'field', cv = $('wallCanvas').getBoundingClientRect(), sheet = $('fieldSheet');
+    const bottom = phone && sheet?.dataset.open === 'true' ? sheet.getBoundingClientRect().top - cv.top : view.h;
+    const m = 60, x0 = 34 + m, x1 = view.w - m - (phone ? 50 : 0), y0 = m + (phone ? 50 : 0), y1 = bottom - m;
+    const [sx, sy] = view.toScreen(pos.x, pos.y);
+    if (x1 <= x0 || y1 <= y0) { view.setView({ ...view.v, ox: view.v.ox + (x0 + x1) / 2 - sx, oy: view.v.oy + (y0 + Math.max(y0, y1)) / 2 - sy }); return; }
+    const dx = sx < x0 ? x0 - sx : sx > x1 ? x1 - sx : 0, dy = sy < y0 ? y0 - sy : sy > y1 ? y1 - sy : 0;
+    if (dx || dy) view.setView({ ...view.v, ox: view.v.ox + dx, oy: view.v.oy + dy });
+  }
   function nudge(pl, dx, dy) {
     const st = ST(), app = A();
     if (W.isPositioned(pl)) {
       const step = pl.attachment === 'screw_on' ? 10 : 50;   // planned bolt-on: 5 cm, a fraction of typical hole spacing
       st.commit(`Nudge ${pl.label}`, p => { const q = p.placements.find(x => x.id === pl.id); q.local = { x: q.local.x + dx * step, y: q.local.y + dy * step }; });
+      followHold(pl.id);
       return;
     }
     const pos = W.placementPosition(st.index, pl);
@@ -3825,6 +3841,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     const nb = W.neighbourHole(st.index, pos.hole, dx, dy, busy);
     if (!nb) { app.status('No free hole in that direction.'); return; }
     st.commit(`Nudge ${pl.label}`, p => { p.placements.find(x => x.id === pl.id).holeId = nb.id; });
+    followHold(pl.id);
     app.status(`${pl.label} → ${nb.id}`);
   }
   function duplicate(pl) {
@@ -3884,6 +3901,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       <section class="section"><h2>Tools</h2>
         <div class="toolrow"><button data-tool="select" class="${ui.tool === 'select' ? 'on' : ''}">⌖ Select / move</button><button data-tool="place" class="${ui.tool === 'place' ? 'on' : ''}">＋ Place (P)</button><button id="fitBtn">⤢ Fit (F)</button></div>
         <div class="field" style="margin-top:8px"><label>Rotation for new holds</label><div class="row"><button class="btn small" data-prot="-15">↺ 15°</button><input class="inp" id="placeRot" type="number" step="15" value="${ui.placeRotation}" style="width:70px"><button class="btn small" data-prot="15">↻ 15°</button><span class="muted">${U.clock(ui.placeRotation)}</span></div></div>
+        <label class="check" style="margin-top:6px"><input type="checkbox" id="followNudge" ${ui.followNudge !== false ? 'checked' : ''}> Arrow keys: view follows the hold</label>
       </section>
       <section class="section"><h2>Hold library <button class="btn small" id="addCat">＋ Item</button></h2>
         <div class="kit">${kit}</div>
@@ -3901,6 +3919,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     L.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { ui.catalogId = b.dataset.cat; ui.tool = 'place'; A().renderPanels(); }));
     L.querySelectorAll('[data-prot]').forEach(b => b.addEventListener('click', () => { ui.placeRotation = U.normDeg(ui.placeRotation + +b.dataset.prot); renderLeft(); }));
     $('placeRot').addEventListener('change', e => { ui.placeRotation = U.normDeg(+e.target.value || 0); renderLeft(); });
+    $('followNudge').addEventListener('change', e => { ui.followNudge = e.target.checked; ST().saveUi(); });
     $('fitBtn').addEventListener('click', () => A().view.fitSector());
     $('addRoute').addEventListener('click', addRoute);
     $('dupRoute').addEventListener('click', () => duplicateRoute(route));
@@ -5095,8 +5114,10 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     el.innerHTML = `<div class="sheet-grab"></div>
       <div class="sheet-head"><span class="sw" style="background:${colourOf(pl)}"></span><div style="flex:1;min-width:0"><b style="font-size:17px">Move ${U.esc(pl.label)}</b><br><span class="muted">Tap the new ${W.isPositioned(pl) ? 'spot' : 'hole'} on the wall, or step ${step} at a time.</span></div></div>
       <div class="nudge" role="group" aria-label="Move ${step}">${[['◀', '-1,0', 'left'], ['▲', '0,1', 'up'], ['▼', '0,-1', 'down'], ['▶', '1,0', 'right']].map(([g, d, l]) => `<button data-nudge="${d}" aria-label="${step[0].toUpperCase() + step.slice(1)} ${l}">${g}</button>`).join('')}</div>
+      <label class="check mv-follow"><input type="checkbox" id="mvFollow" ${st.ui.followNudge !== false ? 'checked' : ''}> Keep the hold on screen when it moves</label>
       <p class="hint" id="pbMsg" aria-live="polite">${U.esc(mode.msg)}</p>
       <button class="btn primary bigbtn" id="mvDone">Done</button>`;
+    el.querySelector('#mvFollow').addEventListener('change', e => { st.ui.followNudge = e.target.checked; st.saveUi(); });
     el.querySelectorAll('[data-nudge]').forEach(b => b.addEventListener('click', () => {
       const [dx, dy] = b.dataset.nudge.split(',').map(Number), cur = st.placement(pl.id);
       if (cur) RE().nudge(cur, dx, dy);
@@ -5819,6 +5840,15 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       pointer(cv, 'pointerdown', qx, qy, 1, 'touch'); await wait(450);
       pointer(cv, 'pointermove', bx, by, 1, 'touch'); pointer(cv, 'pointerup', bx, by, 1, 'touch'); await wait(30);
       check('Phone editing: long press drags the selected hold to another hole', st.placement(np.id).holeId === dest.id, st.placement(np.id).holeId);
+      // Move arrows with "keep the hold on screen": start 70 px from the right edge, step right four holes.
+      q('[data-ed="move"]').click(); await wait(30);
+      const scr = () => { const p2 = W.placementPosition(st.index, st.placement(np.id)); return v.toScreen(p2.x, p2.y); };
+      v.setView({ ...v.v, ox: v.v.ox + (v.w - 70 - scr()[0]) }); await wait(20);
+      const follow0 = q('#mvFollow')?.checked, hole0 = st.placement(np.id).holeId;
+      for (let k = 0; k < 4; k++) { q('[data-nudge="1,0"]').click(); await wait(20); }
+      const [fx2, fy2] = scr();
+      check('Phone editing: the view follows a hold moved off screen with the arrows', follow0 && st.placement(np.id).holeId !== hole0 && fx2 > 0 && fx2 < v.w - 50 && fy2 > 0 && fy2 < v.h, `${Math.round(fx2)} px of ${Math.round(v.w)}`);
+      q('#mvDone').click(); await wait(20);
       q('[data-ed="del"]').click();
       const gone = !st.placement(np.id);
       q('#ftUndo').click();
