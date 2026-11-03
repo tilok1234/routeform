@@ -85,6 +85,11 @@ p{margin:0 0 8px}
 .cb-opts select{background:#0e1725;border:1px solid #3b4a60;border-radius:8px;min-height:30px;padding:2px 6px;color:var(--txt);font-size:12px}
 .cb-opts .chip{cursor:pointer;margin-left:auto}
 .cb-note{margin:0;font-size:11px;color:var(--muted);line-height:1.35}
+.htable{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+.htable th{text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line)}
+.htable td{padding:4px 6px;border-bottom:1px solid #223044}
+.htable tr.on td{background:#1f2b3c}
+.htable .warn-t{color:var(--warn)}
 .stage.climbing #status{display:none}
 /* phone: the player bar spans the bottom of the map; scrubber on its own line, options scroll sideways */
 body.field .climbbar{left:6px;right:6px;bottom:6px;max-width:620px;padding:8px 10px 10px;gap:6px}
@@ -296,7 +301,7 @@ body.field .memb label{min-height:40px;font-size:14px}
 }
 @media print{.topbar,.ribbon,.side,.hud,.minimap{display:none!important}}
 </style>
-<meta name="routeform-build" content="2026-11-03T17:16:29.443Z">
+<meta name="routeform-build" content="2026-11-03T17:46:45.401Z">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1990,8 +1995,10 @@ globalThis.RF_ASSETS = { photos: {} };
  * This is a scripted illustration, not a movement simulation. The hold order comes from simple
  * rules (next hold up, the trailing hand moves, feet step up behind), the body is placed by a small
  * 2-D reach solver on the flat front elevation, and "long reach" only compares straight-line
- * distances with the figure's limb lengths. Balance, friction, forces, rope work and difficulty
- * are not modelled. No DOM here, so the Node tests can run it. */
+ * distances with the figure's limb lengths. Balance, friction, forces and difficulty are not
+ * modelled. On lead, clips follow a simple rule (clip a quickdraw once it is about head height
+ * and within reach); that is an illustration of clipping positions, never a safety assessment.
+ * No DOM here, so the Node tests can run it. */
 (function (RF) {
   'use strict';
   const W = RF.wall;
@@ -2000,7 +2007,9 @@ globalThis.RF_ASSETS = { photos: {} };
   const SIDE = { lh: -1, rh: 1, lf: -1, rf: 1 };
   const isHand = k => k === 'lh' || k === 'rh';
   const REACH_TOL = 1.03;   // drawn touching up to 3 % over full extension; beyond that it is a long reach
-  const DUR = { hand: 0.85, foot: 0.6, match: 0.7, end: 1.2 };   // seconds at 1× speed
+  const REACH_AT = 0.62;    // share of a hand move spent standing up into the reach; the rest settles onto the hold
+  const DUR = { match: 0.75, chalk: 1.5, clip: 2.0, missed: 1.0, end: 1.2 };   // seconds at 1× speed (hand and foot moves scale with distance)
+  const REST_EVERY = 5;     // hand moves between chalk-ups, when a big hold and both feet allow it
 
   /* Segment lengths as fractions of standing height (rounded from common anthropometric tables).
    * apeMm (arm span minus height) is shared between both arms. The forearm segment ends at the
@@ -2030,18 +2039,29 @@ globalThis.RF_ASSETS = { photos: {} };
   // Contact points carry a third value: 1 when standing on the floor.
   const at = ref => (ref ? (ref.hold ? [ref.hold.x, ref.hold.y, 0] : [ref.x, ref.y, ref.floor ? 1 : 0]) : null);
   const pointsOf = state => ({ lh: at(state.lh), rh: at(state.rh), lf: at(state.lf), rf: at(state.rf) });
+  const dist = (p, c) => Math.hypot(p[0] - c[0], p[1] - c[1]);
+
+  /* Comfortable limb lengths (share of full reach) for the poses the climber takes.
+   *  plan:  the pose that decides long reaches and feet-off moves (what the tests check)
+   *  rest:  hanging on straight arms between moves, knees bent, hips low
+   *  reach: standing up on the feet into a hand move, the reaching arm long, the other arm pulling */
+  const STYLE = {
+    plan: { hand: 0.86, foot: 0.72, floor: 0.9, stand: 0.97 },
+    rest: { hand: 0.96, foot: 0.66, floor: 0.88, stand: 0.97 },
+    reach: { hand: 0.8, foot: 0.92, floor: 0.95, stand: 0.97, mover: 0.97 }
+  };
 
   /* How uncomfortable a body pose is for the given contacts: limbs near a relaxed length, hard
    * penalty past full reach, hands above the hips, feet below them, torso upright, hips over the
    * feet, weight hanging down, and little change from the previous pose. */
-  function cost(b, q, pts, prev) {
+  function cost(b, q, pts, prev, style = STYLE.plan, mover = null) {
     const r = roots(b, q), H = b.H, hanging = !!(pts.lh || pts.rh);
     let e = q.th * q.th * 0.8, hx = 0, hn = 0, fx = 0, fn = 0;
     for (const k of LIMBS) {
       const p = pts[k];
       if (!p) continue;
       const hand = isHand(k), R = reachOf(b, k), d = Math.hypot(p[0] - r[k][0], p[1] - r[k][1]);
-      const relaxed = R * (hand ? 0.86 : !hanging ? 0.97 : p[2] ? 0.9 : 0.72);
+      const relaxed = R * (k === mover ? style.mover : hand ? style.hand : !hanging ? style.stand : p[2] ? style.floor : style.foot);
       e += ((d - relaxed) / R) ** 2 * (hand ? 1 : 1.3);
       if (d > R * 0.99) e += ((d - R * 0.99) / R) ** 2 * 500;
       if (hand) { hx += p[0]; hn++; if (p[1] < q.y) e += ((q.y - p[1]) / H) ** 2 * 30; }
@@ -2056,21 +2076,21 @@ globalThis.RF_ASSETS = { photos: {} };
   }
 
   // Pattern search over (x, y, th); three parameters, so this is cheap and deterministic.
-  function solve(b, pts, init, prev) {
-    let q = { ...init }, e = cost(b, q, pts, prev);
+  function solve(b, pts, init, prev, style, mover) {
+    let q = { ...init }, e = cost(b, q, pts, prev, style, mover);
     const step = { x: 0.15 * b.H, y: 0.15 * b.H, th: 0.3 };
     for (let it = 0; it < 600 && step.x > 0.8; it++) {
       let moved = false;
       for (const key of ['x', 'y', 'th']) {
         for (const dir of [1, -1]) {
-          const t = { ...q, [key]: q[key] + dir * step[key] }, et = cost(b, t, pts, prev);
+          const t = { ...q, [key]: q[key] + dir * step[key] }, et = cost(b, t, pts, prev, style, mover);
           if (et < e) { q = t; e = et; moved = true; break; }
         }
       }
       if (!moved) { step.x /= 2; step.y /= 2; step.th /= 2; }
     }
     q.th = Math.max(-0.7, Math.min(0.7, q.th));
-    return { q, e: cost(b, q, pts, prev) };
+    return { q, e: cost(b, q, pts, prev, style, mover) };
   }
   function guess(b, pts) {
     const hs = [pts.lh, pts.rh].filter(Boolean), fs = [pts.lf, pts.rf].filter(Boolean), all = hs.concat(fs);
@@ -2088,13 +2108,16 @@ globalThis.RF_ASSETS = { photos: {} };
     }
     return out;
   }
+  const clamp = (v, a, c) => Math.max(a, Math.min(c, v));
 
-  /* Script a climb of one route. Returns { ok, body, holds, frames, moves, total, longMoves }:
-   * frames[i] is the body after i moves; moves[i] carries t0/dur (seconds), the limb, the target
-   * hold, a sentence for the player and any long reach. */
+  /* Script a climb of one route. Returns { ok, body, holds, frames, moves, total, longMoves, lead, ... }:
+   * frames[i] is the body after i moves (q decides the flags; rest is the drawn pose); moves[i]
+   * carries t0/dur (seconds), the kind (hand / foot / match / chalk / clip), the limb, the target,
+   * a sentence for the player and any long reach or clipping flag. opts: heightMm, apeMm, lead. */
   function plan(project, index, routeId, opts = {}) {
-    const b = body(opts.heightMm || 1700, opts.apeMm || 0), H = b.H;
-    if (!project.routes.some(r => r.id === routeId)) return { ok: false, reason: 'Route not found.', body: b };
+    const b = body(opts.heightMm || 1700, opts.apeMm || 0), H = b.H, lead = !!opts.lead;
+    const route = project.routes.find(r => r.id === routeId);
+    if (!route) return { ok: false, reason: 'Route not found.', body: b };
     const catName = new Map(project.catalog.map(c => [c.id, c.name]));
     const holds = [];
     for (const pl of project.placements) {
@@ -2111,20 +2134,28 @@ globalThis.RF_ASSETS = { photos: {} };
     const seq = hands.filter(h => h !== startL && h !== startR && h !== finish && h.y >= lowStart - 50 && h.y <= finish.y);
     seq.push(finish);
 
+    // Lead: the route's rope line (or the nearest one) and its quickdraws, clipped bottom to top.
+    const lines = project.fixtures.filter(f => f.kind === 'rope_line'), meanX = holds.reduce((a, h) => a + h.x, 0) / holds.length;
+    const line = lines.find(l => l.id === route.lineRef) || lines.slice().sort((a, c) => Math.abs(a.x - meanX) - Math.abs(c.x - meanX))[0] || null;
+    const draws = line ? project.fixtures.filter(f => f.kind === 'protection_point' && f.lineId === line.id).sort((a, c) => a.y - c.y) : [];
+    const anchor = line ? project.fixtures.find(f => f.kind === 'top_anchor' && f.lineId === line.id) || null : null;
+
     const midX = (startL.x + startR.x) / 2;
     let state = { lh: null, rh: null, lf: { floor: true, x: midX - 0.09 * H, y: 0 }, rf: { floor: true, x: midX + 0.09 * H, y: 0 } };
-    let q = solve(b, pointsOf(state), guess(b, pointsOf(state)), null).q;
-    const frames = [{ state, q, long: [] }], moves = [];
+    let q = solve(b, pointsOf(state), guess(b, pointsOf(state)), null).q, clips = 0;
+    const frames = [{ state, q, rest: q, long: [], clips }], moves = [], clipped = [];
 
     const evaluate = st => {
       const pts = pointsOf(st), warm = solve(b, pts, q, q), cold = solve(b, pts, guess(b, pts), q);
       const best = cold.e < warm.e ? cold : warm;
       return { q: best.q, long: longLimbs(b, best.q, pts) };
     };
-    const push = (kind, limb, to, text) => {
-      const next = { ...state, [limb]: to };
+    // Drawn poses are only used when they keep every contact the plan pose keeps in reach.
+    const drawn = (pts, long, cand) => (cand && !longLimbs(b, cand, pts).some(l => !long.some(x => x.limb === l.limb)) ? cand : null);
+    const push = (kind, limb, to, text, extra = {}) => {
+      const from = at(state[limb]), next = { ...state, [limb]: to };
       let ev = evaluate(next);
-      // A foot left behind out of reach comes off the wall and dangles instead of stretching.
+      // A foot left behind out of reach comes off the wall and dangles (or flags) instead of stretching.
       const dropped = [];
       for (let pass = 0; pass < 2; pass++) {
         const off = ev.long.filter(l => !isHand(l.limb) && l.limb !== limb).map(l => l.limb);
@@ -2133,14 +2164,23 @@ globalThis.RF_ASSETS = { photos: {} };
         dropped.push(...off);
         ev = evaluate(next);
       }
+      const pts = pointsOf(next), prevQ = q;
       state = next; q = ev.q;
+      const rest = drawn(pts, ev.long, solve(b, pts, q, q, STYLE.rest).q) || q;
+      const reachQ = kind === 'hand' || kind === 'match' ? drawn(pts, ev.long, solve(b, pts, q, prevQ, STYLE.reach, limb).q) : null;
       const longReach = ev.long.find(l => l.limb === limb) || ev.long.find(l => isHand(l.limb)) || null;
       if (dropped.length) text += dropped.length > 1 ? ' · both feet come off' : ` · ${NAMES[dropped[0]].toLowerCase()} comes off`;
-      moves.push({ kind, limb, to: to?.hold || null, text, dropped, longReach, dur: DUR[kind] });
-      frames.push({ state, q, long: ev.long });
+      // Moves take longer the further the limb travels; feet-off moves get a moment to swing in.
+      const span = from && to ? dist(from, at(to)) : 0;
+      const dur = kind === 'hand' ? 0.55 + 0.35 * clamp(span / b.armReach, 0.2, 1.8) + (dropped.length ? 0.3 : 0)
+        : kind === 'foot' ? 0.4 + 0.3 * clamp(span / b.legReach, 0.2, 1.3) : extra.missed ? DUR.missed : DUR[kind];
+      if (extra.clip && !extra.missed) clipped.push(extra.clip);
+      moves.push({ kind, limb, to: to?.hold || null, text, dropped, longReach, dur, reachQ, ...extra });
+      frames.push({ state, q, rest, long: ev.long, clips: clipped.length });
     };
     const holdOf = k => state[k]?.hold || null;
     const busy = (h, except) => LIMBS.some(k => k !== except && holdOf(k)?.id === h.id);
+    const feetOn = () => !!(state.lf && state.rf);
 
     // Foot candidates for stepping up before a hand reaches (targetY, targetX), best first.
     const footOptions = (limb, targetY, targetX) => {
@@ -2172,12 +2212,30 @@ globalThis.RF_ASSETS = { photos: {} };
         if (h) push('foot', f, { hold: h }, `${NAMES[f]} → ${h.label} (${h.name})`);
       }
     };
+    // Lead: clip each quickdraw once it is about head height, with the hand on its side. A draw still
+    // out of reach when the hips pass it is reported as skipped (a runout, or a clip from elsewhere).
+    let nextDraw = 0;
+    const tryClips = () => {
+      while (lead && nextDraw < draws.length) {
+        const d = draws[nextDraw], r = roots(b, frames[frames.length - 1].rest), pt = [d.x, d.y];
+        if (d.y > r.head[1] + 0.05 * H) return;
+        const k = dist(r.lh, pt) <= dist(r.rh, pt) ? 'lh' : 'rh', missed = dist(r[k], pt) > b.armReach * 0.98;
+        if (missed && d.y > r.hip[1]) return;   // may come into reach after the next moves
+        const awkward = missed ? 'out of reach' : !feetOn() ? 'feet off' : null;
+        nextDraw++;
+        if (!state[k]) continue;
+        push('clip', k, state[k], missed ? `Quickdraw ${d.label} out of reach from the route · skipped` : `${NAMES[k]} clips quickdraw ${d.label}${awkward ? ' · from a feet-off position' : ''}`,
+          { clip: d, missed, awkward });
+      }
+    };
 
     push('hand', 'lh', { hold: startL }, `Left hand → ${startL.label} (start)`);
     push('hand', 'rh', { hold: startR }, startR === startL ? `Right hand matches ${startL.label} (start)` : `Right hand → ${startR.label} (start)`);
+    let sinceRest = 0;
     for (const h of seq) {
       if (holdOf('lh')?.id === h.id || holdOf('rh')?.id === h.id) continue;
       stepFeet(h.y, h.x);
+      tryClips();
       const L = at(state.lh), R = at(state.rh);
       let hand;
       if (holdOf('lh') && holdOf('lh') === holdOf('rh')) hand = h.x < L[0] ? 'lh' : 'rh';
@@ -2189,6 +2247,12 @@ globalThis.RF_ASSETS = { photos: {} };
         };
         hand = score('lh') <= score('rh') ? 'lh' : 'rh';
       }
+      // Every few moves, on a big hold with both feet on, chalk up the hand that is about to move.
+      const keep = holdOf(hand === 'lh' ? 'rh' : 'lh');
+      if (sinceRest >= REST_EVERY && feetOn() && holdOf(hand) && keep && /jug|pocket|large/.test(keep.name)) {
+        push('chalk', hand, state[hand], `Shakes out and chalks up the ${hand === 'lh' ? 'left' : 'right'} hand on ${keep.label}`);
+        sinceRest = 0;
+      }
       // Step up first with any foot this reach would pull off the wall.
       for (const l of evaluate({ ...state, [hand]: { hold: h } }).long) {
         if (isHand(l.limb)) continue;
@@ -2196,46 +2260,92 @@ globalThis.RF_ASSETS = { photos: {} };
         if (f) push('foot', l.limb, { hold: f }, `${NAMES[l.limb]} → ${f.label} (${f.name})`);
       }
       push('hand', hand, { hold: h }, `${NAMES[hand]} → ${h.label} (${h.name})${h === finish ? ' · finish' : ''}`);
+      sinceRest++;
+      tryClips();
     }
     const free = holdOf('lh')?.id === finish.id ? 'rh' : 'lh';
     if (holdOf(free)?.id !== finish.id) push('match', free, { hold: finish }, `${NAMES[free]} matches ${finish.label} — top`);
+    tryClips();
+    if (lead && anchor) {
+      const r = roots(b, frames[frames.length - 1].rest), pt = [anchor.x, anchor.y], k = dist(r.lh, pt) <= dist(r.rh, pt) ? 'lh' : 'rh';
+      if (dist(r[k], pt) <= b.armReach * 0.98) push('clip', k, state[k], `${NAMES[k]} clips the top anchor ${anchor.label}`, { clip: anchor, missed: false, awkward: null, top: true });
+    }
 
     let t = 0;
     for (const m of moves) { m.t0 = t; t += m.dur; }
-    return { ok: true, body: b, routeId, holds, frames, moves, total: t + DUR.end, longMoves: moves.filter(m => m.longReach) };
+    const clipFlags = moves.filter(m => m.kind === 'clip' && (m.missed || m.awkward));
+    return { ok: true, body: b, routeId, holds, frames, moves, total: t + DUR.end, longMoves: moves.filter(m => m.longReach), lead, line, draws: clipped, clipFlags };
   }
 
-  // Where a free limb hangs: hands down by the side, feet dangling slightly outwards.
-  function restEnd(b, r, k) {
+  /* Quick reach check: the same route for several climber heights. */
+  function heights(project, index, routeId, list, opts = {}) {
+    return list.map(cm => {
+      const pl = plan(project, index, routeId, { ...opts, heightMm: cm * 10 });
+      return pl.ok ? { cm, ok: true, moves: pl.moves.length, long: pl.longMoves.length, feetOff: pl.moves.filter(m => m.dropped.length).length,
+        missed: pl.moves.filter(m => m.missed).length, awkward: pl.moves.filter(m => m.awkward === 'feet off').length, seconds: Math.round(pl.total) } : { cm, ok: false, reason: pl.reason };
+    });
+  }
+
+  // Where a free limb hangs: hands down by the side; a foot flags out to its side for balance while
+  // the other foot and a hand are on, otherwise it dangles slightly outwards.
+  function restEnd(b, r, k, state) {
     const R = reachOf(b, k), root = r[k];
-    return isHand(k) ? [root[0] + SIDE[k] * 0.14 * R, root[1] - 0.93 * R] : [root[0] + SIDE[k] * 0.1 * R, root[1] - 0.96 * R];
+    if (isHand(k)) return [root[0] + SIDE[k] * 0.14 * R, root[1] - 0.93 * R];
+    const other = state?.[k === 'lf' ? 'rf' : 'lf'], hanging = state && (state.lh || state.rh);
+    if (other?.hold && hanging) return [root[0] + SIDE[k] * 0.74 * R, root[1] - 0.5 * R];
+    return [root[0] + SIDE[k] * 0.1 * R, root[1] - 0.96 * R];
   }
   const ease = u => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+  const lerpQ = (a, c, u) => ({ x: a.x + (c.x - a.x) * u, y: a.y + (c.y - a.y) * u, th: a.th + (c.th - a.th) * u });
+  const lerpP = (a, c, u) => [a[0] + (c[0] - a[0]) * u, a[1] + (c[1] - a[1]) * u];
+  const poseOf = F => F.rest || F.q;
 
   function frameAt(pl, i) {
-    const F = pl.frames[i], r = roots(pl.body, F.q), ends = {}, on = {};
-    for (const k of LIMBS) { ends[k] = F.state[k] ? at(F.state[k]) : restEnd(pl.body, r, k); on[k] = !!F.state[k]?.hold; }
-    return { q: F.q, ends, on, index: i - 1, move: pl.moves[i - 1] || null, inMotion: false, long: F.long };
+    const F = pl.frames[i], q = poseOf(F), r = roots(pl.body, q), ends = {}, on = {}, next = pl.moves[i];
+    for (const k of LIMBS) { ends[k] = F.state[k] ? at(F.state[k]) : restEnd(pl.body, r, k, F.state); on[k] = !!F.state[k]?.hold; }
+    const look = next?.to ? [next.to.x, next.to.y] : next?.clip ? [next.clip.x, next.clip.y] : null;
+    return { q, ends, on, index: i - 1, move: pl.moves[i - 1] || null, inMotion: false, long: F.long, look, clips: F.clips || 0, ropeHand: null };
   }
-  /* Body and limb end points at time t (seconds). The body shifts first, then the moving limb
-   * travels in a small arc to its new contact. */
+  /* Body and limb end points at time t (seconds). On a hand move the body stands up into the reach
+   * while the hand travels, then settles onto straight arms; other moves shift the body first and
+   * then move the limb in a small arc. Chalk and clip moves take the hand away and bring it back. */
   function poseAt(pl, t) {
     const ms = pl.moves;
     let i = 0;
     while (i < ms.length && t >= ms[i].t0 + ms[i].dur) i++;
     if (i >= ms.length || t <= ms[i].t0) return frameAt(pl, i);
-    const m = ms[i], u = (t - m.t0) / m.dur, A = pl.frames[i], B = pl.frames[i + 1];
-    const ub = ease(u / 0.85), ul = ease((u - 0.15) / 0.85);
-    const q = { x: A.q.x + (B.q.x - A.q.x) * ub, y: A.q.y + (B.q.y - A.q.y) * ub, th: A.q.th + (B.q.th - A.q.th) * ub };
-    const r = roots(pl.body, q), ends = {}, on = {}, bump = Math.sin(Math.PI * ul) * 0.05 * pl.body.H;
+    const m = ms[i], u = (t - m.t0) / m.dur, A = pl.frames[i], B = pl.frames[i + 1], b = pl.body;
+    const reaching = (m.kind === 'hand' || m.kind === 'match') && m.reachQ;
+    const q = reaching ? (u < REACH_AT ? lerpQ(poseOf(A), m.reachQ, ease(u / REACH_AT)) : lerpQ(m.reachQ, poseOf(B), ease((u - REACH_AT) / (1 - REACH_AT))))
+      : lerpQ(poseOf(A), poseOf(B), ease(u / 0.85));
+    const travel = reaching ? ease((u - 0.08) / (REACH_AT - 0.08)) : ease((u - 0.15) / 0.85);
+    const r = roots(b, q), ends = {}, on = {}, bump = Math.sin(Math.PI * travel) * 0.05 * b.H;
+    let ropeHand = null, clips = A.clips || 0;
     for (const k of LIMBS) {
-      const a = A.state[k], c = B.state[k], pa = a ? at(a) : restEnd(pl.body, r, k);
+      const a = A.state[k], c = B.state[k], pa = a ? at(a) : restEnd(b, r, k, A.state);
       on[k] = a === c && !!a?.hold;
+      if (k === m.limb && (m.kind === 'chalk' || m.kind === 'clip')) {
+        on[k] = false;
+        if (m.kind === 'chalk') {
+          // To the chalk bag behind the hips, a shake, and back to the hold.
+          const bag = [r.hip[0] - SIDE[k] * 0.02 * b.H, r.hip[1] - 0.03 * b.H], shake = Math.sin(u * 40) * 0.025 * b.H;
+          ends[k] = u < 0.28 ? lerpP(pa, bag, ease(u / 0.28)) : u < 0.76 ? [bag[0] + shake, bag[1] + Math.abs(shake) * 0.4] : lerpP(bag, pa, ease((u - 0.76) / 0.24));
+        } else {
+          // Pull rope from the harness, up to the quickdraw, clip, and back to the hold.
+          const tie = [r.hip[0] + SIDE[k] * 0.02 * b.H, r.hip[1] + 0.01 * b.H], d = [m.clip.x, m.clip.y];
+          ends[k] = m.missed ? (u < 0.5 ? lerpP(pa, d, ease(u / 0.5)) : lerpP(d, pa, ease((u - 0.5) / 0.5)))
+            : u < 0.28 ? lerpP(pa, tie, ease(u / 0.28)) : u < 0.6 ? lerpP(tie, d, ease((u - 0.28) / 0.32)) : u < 0.74 ? d : lerpP(d, pa, ease((u - 0.74) / 0.26));
+          if (!m.missed && u >= 0.28 && u < 0.74) ropeHand = ends[k];
+          if (!m.missed && u >= 0.72) clips = B.clips;
+        }
+        continue;
+      }
       if (a === c) { ends[k] = pa; continue; }
-      const pc = c ? at(c) : restEnd(pl.body, r, k);
-      ends[k] = [pa[0] + (pc[0] - pa[0]) * ul + SIDE[k] * bump * 0.6, pa[1] + (pc[1] - pa[1]) * ul + bump];
+      const pc = c ? at(c) : restEnd(b, r, k, B.state);
+      ends[k] = [pa[0] + (pc[0] - pa[0]) * travel + SIDE[k] * bump * 0.6, pa[1] + (pc[1] - pa[1]) * travel + bump];
     }
-    return { q, ends, on, index: i, move: m, inMotion: true, long: [] };
+    const look = m.clip ? [m.clip.x, m.clip.y] : m.to && m.kind !== 'chalk' ? [m.to.x, m.to.y] : null;
+    return { q, ends, on, index: i, move: m, inMotion: true, long: [], look, clips, ropeHand };
   }
 
   /* Two-segment limb from its joint to an end point; the elbow/knee bends outwards. If the end
@@ -2255,7 +2365,7 @@ globalThis.RF_ASSETS = { photos: {} };
     return { root, mid: SIDE[k] * m1[0] > SIDE[k] * m2[0] ? m1 : m2, end, reached: true };
   }
 
-  RF.climb = { LIMBS, NAMES, REACH_TOL, body, roots, plan, poseAt, limb };
+  RF.climb = { LIMBS, NAMES, REACH_TOL, body, roots, plan, heights, poseAt, limb };
 })(globalThis.RF = globalThis.RF || {});
 </script>
 <script data-rf>
@@ -5398,7 +5508,9 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 <script data-rf>
 /* ROUTEFORM 0.2 — ui-climb.js
  * Climber player for the routesetting view and the phone view: open it on a route, then play/pause,
- * step, scrub, pick the figure's size and speed, and let the view follow. Draws the figure over the wall.
+ * step, scrub, pick the figure's size, speed, top rope or lead, and let the view follow. Draws the figure
+ * (head turned to the next hold) and the rope, which on lead runs through the clipped quickdraws.
+ * "Heights…" compares the same route for several climber heights.
  * The rules and body model live in climber.js; nothing here changes the project. */
 (function (RF) {
   'use strict';
@@ -5408,6 +5520,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
   const HEIGHTS = [140, 150, 155, 160, 165, 170, 175, 180, 185, 190, 200];
   const APES = [[-5, '5 cm shorter'], [0, 'same as height'], [5, '+5 cm'], [10, '+10 cm']];
   const SPEEDS = [0.5, 1, 1.5, 2, 4];
+  const CHECK_HEIGHTS = [150, 160, 170, 180, 190, 200];
   const COL = { out: '#0d1218', skin: '#cfd6df', shirt: '#1f5f99', pants: '#2c333c', shoe: '#d2452f', harness: '#f2c230', rope: '#efe9d8', target: '#ffd166', long: '#ff5a4f' };
 
   const climb = {
@@ -5415,7 +5528,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
 
     prefs() {
       const st = ST();
-      st.ui.climber = { heightCm: 170, apeCm: 0, speed: 1, follow: true, ...(st.ui.climber || {}) };
+      st.ui.climber = { heightCm: 170, apeCm: 0, speed: 1, follow: true, lead: false, ...(st.ui.climber || {}) };
       return st.ui.climber;
     },
 
@@ -5453,7 +5566,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
     /* Recompute the climb (route edited, figure changed). Keeps the position by move number. */
     replan() {
       const st = ST(), pr = this.prefs(), done = this.plan ? this.completed(this.t) : 0;
-      const pl = CL.plan(st.project, st.index, this.routeId, { heightMm: pr.heightCm * 10, apeMm: pr.apeCm * 10 });
+      const pl = CL.plan(st.project, st.index, this.routeId, { heightMm: pr.heightCm * 10, apeMm: pr.apeCm * 10, lead: pr.lead });
       if (!pl.ok) { A().toast(pl.reason, 'warn'); return false; }
       this.plan = pl;
       if (this.t > 0) { const m = pl.moves[Math.min(done, pl.moves.length - 1)]; this.t = done >= pl.moves.length ? pl.total : m.t0; }
@@ -5491,7 +5604,7 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       this.seek(dir > 0 ? ends.find(e => e > t + eps) ?? this.plan.total : [...ends].reverse().find(e => e < t - eps) ?? 0);
     },
     nextLong() {
-      const longs = this.plan.moves.filter(m => m.longReach || m.dropped.length);
+      const longs = this.plan.moves.filter(m => m.longReach || m.dropped.length || m.missed || m.awkward);
       if (!longs.length) return;
       const m = longs.find(x => x.t0 + x.dur > this.t + 1e-6) || longs[0];
       this.pause(); this.seek(m.t0 + m.dur);
@@ -5542,9 +5655,11 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         <div class="cb-row cb-opts">
           <label>Climber <select id="cbHeight">${opt(HEIGHTS, pr.heightCm, v => v + ' cm')}</select></label>
           <label>Arm span <select id="cbApe">${APES.map(([v, t]) => `<option value="${v}" ${v === pr.apeCm ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+          <label>Rope <select id="cbRope"><option value="top" ${pr.lead ? '' : 'selected'}>Top rope</option><option value="lead" ${pr.lead ? 'selected' : ''}>Lead (clipping)</option></select></label>
           <label>Speed <select id="cbSpeed">${opt(SPEEDS, pr.speed, v => v + '×')}</select></label>
           <label class="check"><input type="checkbox" id="cbFollow" ${pr.follow ? 'checked' : ''}> Follow</label>
-          <button class="chip warn" id="cbFlags" hidden title="Jump to the next long reach or feet-off move"></button>
+          <button class="chip" id="cbHeights" title="Compare this route for climbers of different heights">Heights…</button>
+          <button class="chip warn" id="cbFlags" hidden title="Jump to the next long reach, feet-off move or clipping issue"></button>
         </div>
         <p class="cb-note" id="cbNote"></p>`;
       $('stage').appendChild(bar);
@@ -5558,6 +5673,8 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       $('cbHeight').addEventListener('change', e => { prefChange('heightCm', +e.target.value); this.replan(); this.syncBar(true); A().requestDraw(); });
       $('cbApe').addEventListener('change', e => { prefChange('apeCm', +e.target.value); this.replan(); this.syncBar(true); A().requestDraw(); });
       $('cbSpeed').addEventListener('change', e => prefChange('speed', +e.target.value));
+      $('cbRope').addEventListener('change', e => { prefChange('lead', e.target.value === 'lead'); this.replan(); this.syncBar(true); A().requestDraw(); });
+      $('cbHeights').addEventListener('click', () => this.heightsDialog());
       $('cbFollow').addEventListener('change', e => { prefChange('follow', e.target.checked); if (e.target.checked) { this.follow(true); A().requestDraw(); } });
       $('cbFlags').addEventListener('click', () => this.nextLong());
       this.syncBar(true);
@@ -5571,15 +5688,36 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       const flag = pose.move?.longReach ? ` · ⚠ about ${Math.ceil(pose.move.longReach.excessMm / 10)} cm too far for this figure` : '';
       set('cbMove', 'textContent', pose.move ? `Move ${pose.index + 1}/${n} · ${pose.move.text}${flag}` : `Ready · ${n} moves`);
       if (!full) return;
-      const longs = pl.longMoves.length, cuts = pl.moves.filter(m => m.dropped.length).length;
+      const longs = pl.longMoves.length, cuts = pl.moves.filter(m => m.dropped.length).length, clipsBad = pl.clipFlags?.length || 0;
       const chip = $('cbFlags'), parts = [];
       if (longs) parts.push(`${longs} long reach${longs > 1 ? 'es' : ''}`);
       if (cuts) parts.push(`${cuts} feet-off move${cuts > 1 ? 's' : ''}`);
+      if (clipsBad) parts.push(`${clipsBad} clipping issue${clipsBad > 1 ? 's' : ''}`);
       chip.hidden = !parts.length;
       chip.textContent = parts.length ? '⚠ ' + parts.join(' · ') : '';
-      set('cbNote', 'textContent', ST().ui.mode === 'field'
+      const leadNote = pr.lead ? ' Clipping positions are an illustration, never a check of protection or clipping safety.' : '';
+      set('cbNote', 'textContent', (ST().ui.mode === 'field'
         ? "Animation only, on placeholder wall geometry. It can't tell whether the route is climbable, how hard it is, or whether it's safe."
-        : `Animation only: a ${pr.heightCm} cm figure following simple rules on placeholder wall geometry, in a flat front view. It can't tell whether the route is climbable, how hard it is, or whether it's safe.`);
+        : `Animation only: a ${pr.heightCm} cm figure following simple rules on placeholder wall geometry, in a flat front view. It can't tell whether the route is climbable, how hard it is, or whether it's safe.`) + leadNote);
+    },
+
+    /* The same route for several climber heights, from the same simple rules. Tap a row to watch it. */
+    async heightsDialog() {
+      const st = ST(), pr = this.prefs(), r = st.route(this.routeId);
+      if (!r) return;
+      const rows = CL.heights(st.project, st.index, this.routeId, CHECK_HEIGHTS, { apeMm: pr.apeCm * 10, lead: pr.lead });
+      const cell = n => (n ? `<b class="warn-t">${n}</b>` : '0');
+      const res = await A().modal({ title: `Reach check · ${r.name}`, html: `
+        <p>The same route for climbers of different heights${pr.apeCm ? ` (arm span ${pr.apeCm > 0 ? '+' : ''}${pr.apeCm} cm)` : ''}${pr.lead ? ', on lead' : ''}. Counts come from the animation's simple rules on placeholder wall geometry: a hint where to look, not a grade or a safety check.</p>
+        <table class="htable"><thead><tr><th>Height</th><th>Long reaches</th><th>Feet-off moves</th>${pr.lead ? '<th>Clips skipped</th><th>Clips, feet off</th>' : ''}</tr></thead><tbody>
+        ${rows.map(x => x.ok ? `<tr data-hcm="${x.cm}" class="${x.cm === pr.heightCm ? 'on' : ''}"><td><button type="button" class="btn small">${x.cm} cm ▶</button></td><td>${cell(x.long)}</td><td>${cell(x.feetOff)}</td>${pr.lead ? `<td>${cell(x.missed)}</td><td>${cell(x.awkward)}</td>` : ''}</tr>` : `<tr><td>${x.cm} cm</td><td colspan="4">${U.esc(x.reason)}</td></tr>`).join('')}
+        </tbody></table><p class="hint">Tap a height to watch that climber.</p>`,
+        buttons: [{ label: 'Close', value: null }],
+        onOpen: (box, done) => box.querySelectorAll('[data-hcm] button').forEach(b => b.addEventListener('click', () => done(+b.closest('[data-hcm]').dataset.hcm))) });
+      if (!res.value || !this.active) return;
+      pr.heightCm = res.value; ST().saveUi();
+      $('cbHeight').value = String(res.value);
+      this.replan(); this.syncBar(true); A().requestDraw();
     },
 
     onKey(e) {
@@ -5597,6 +5735,14 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
       if (!this.active || !this.plan) return;
       const st = ST(), pl = this.plan, b = pl.body, s = view.v.s, pose = CL.poseAt(pl, this.t);
       const r = CL.roots(b, pose.q), limbs = {};
+      // Turn the head (a little) towards the hold or quickdraw being reached for.
+      if (pose.look) {
+        const ux = r.head[0] - r.neck[0], uy = r.head[1] - r.neck[1], len = Math.hypot(ux, uy), a0 = Math.atan2(uy, ux);
+        let da = Math.atan2(pose.look[1] - r.neck[1], pose.look[0] - r.neck[0]) - a0;
+        da = Math.atan2(Math.sin(da), Math.cos(da));
+        const a = a0 + U.clamp(da, -0.5, 0.5) * 0.7;
+        r.head = [r.neck[0] + len * Math.cos(a), r.neck[1] + len * Math.sin(a)];
+      }
       for (const k of CL.LIMBS) limbs[k] = CL.limb(b, k, r[k], pose.ends[k]);
       ctx.save();
       // Ring on the hold being reached for.
@@ -5605,13 +5751,18 @@ ${scripts.map(s => `<script data-rf>${safe(s)}<\/script>`).join('\n')}
         ctx.strokeStyle = COL.target; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]);
         ctx.beginPath(); ctx.arc(x, y, Math.max(10, 110 * s), 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
       }
-      // Rope from the harness to the route's top anchor (reference hardware only).
+      // Rope (reference hardware only): top rope runs up to the route's anchor; on lead it runs from the
+      // harness (or the clipping hand) down through the clipped quickdraws to the belayer.
       const route = st.route(this.routeId), fx = st.project.fixtures;
-      const anchor = fx.find(f => f.id === route?.anchorRef) || fx.find(f => f.kind === 'top_anchor' && f.lineId === route?.lineRef);
-      if (anchor && st.ui.layers.ropes) {
-        const [hx, hy] = view.toScreen(r.hip[0], r.hip[1]), [ax, ay] = view.toScreen(anchor.x, anchor.y);
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = COL.out; ctx.lineWidth = Math.max(1.5, 13 * s) + 1.5; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ax, ay); ctx.stroke();
+      const anchor = fx.find(f => f.id === route?.anchorRef) || fx.find(f => f.kind === 'top_anchor' && f.lineId === (pl.line?.id || route?.lineRef));
+      let rope = null;
+      if (pl.lead && pl.line) {
+        rope = [r.hip, ...(pose.ropeHand ? [pose.ropeHand] : []), ...pl.draws.slice(0, pose.clips).reverse().map(d => [d.x, d.y]), [pl.line.x + 350, 1000]];
+      } else if (anchor) rope = [r.hip, [anchor.x, anchor.y]];
+      if (rope && st.ui.layers.ropes) {
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.beginPath(); rope.forEach((p, i) => { const [x, y] = view.toScreen(p[0], p[1]); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+        ctx.strokeStyle = COL.out; ctx.lineWidth = Math.max(1.5, 13 * s) + 1.5; ctx.stroke();
         ctx.strokeStyle = COL.rope; ctx.lineWidth = Math.max(1, 13 * s); ctx.stroke();
       }
       drawFigure(ctx, view, b, r, limbs);
